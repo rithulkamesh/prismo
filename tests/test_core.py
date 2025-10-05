@@ -64,13 +64,17 @@ class TestBasicFunctionality:
         import sys
 
         # Add the examples directory to the path
-        examples_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'examples')
+        examples_dir = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)), "examples"
+        )
         sys.path.insert(0, examples_dir)
 
         from basic_waveguide import run_basic_simulation
 
         result = run_basic_simulation()
-        assert result["status"] == "placeholder"
+        assert result["status"] == "success"
+
+
 # Performance benchmarks (will be expanded later)
 class TestPerformance:
     """Performance and benchmark tests."""

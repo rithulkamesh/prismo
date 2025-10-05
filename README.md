@@ -197,9 +197,9 @@ prismo/
 ### Phase 1: Core Solver (Months 2-5)
 
 - [x] Project scaffolding and tooling
-- [ ] Basic 2D/3D FDTD implementation
-- [ ] Gaussian sources and field monitors
-- [ ] Plane wave validation cases
+- [x] Basic 2D/3D FDTD implementation
+- [x] Gaussian sources and field monitors
+- [x] Plane wave validation cases
 
 ### Phase 2: Waveguide Features (Months 6-9)
 

@@ -69,7 +69,8 @@
             nodejs_20
 
             # Note: CUDA support can be added by setting NIXPKGS_ALLOW_UNFREE=1
-          ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
+          ]
+          ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
             # Linux-specific packages
             glibc
           ];

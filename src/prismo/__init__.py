@@ -18,6 +18,16 @@ from . import (
     visualization,
 )
 
+# Import key classes for top-level access
+from .core.simulation import Simulation
+from .core.grid import YeeGrid, GridSpec
+from .sources.base import Source
+from .sources.point import ElectricDipole, MagneticDipole
+from .sources.gaussian import GaussianBeamSource
+from .sources.plane_wave import PlaneWaveSource
+from .sources.tfsf import TFSFSource
+from .monitors.field import FieldMonitor
+
 # Version information
 __version__ = "0.1.0-dev"
 __author__ = "Rithul Kamesh"
@@ -25,6 +35,7 @@ __email__ = "rithul@example.com"
 
 # Public API exports
 __all__ = [
+    # Modules
     "boundaries",
     "core",
     "geometry",
@@ -34,4 +45,15 @@ __all__ = [
     "sources",
     "utils",
     "visualization",
+    # Classes
+    "Simulation",
+    "YeeGrid",
+    "GridSpec",
+    "Source",
+    "ElectricDipole",
+    "MagneticDipole",
+    "GaussianBeamSource",
+    "PlaneWaveSource",
+    "TFSFSource",
+    "FieldMonitor",
 ]

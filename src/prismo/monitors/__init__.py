@@ -9,11 +9,17 @@ from FDTD simulations:
 - Near-to-far field transforms
 """
 
-# Monitor implementations:
-# - FieldMonitor: Spatial and temporal field sampling
-# - FluxMonitor: Power flux calculation through surfaces
-# - ModeMonitor: Waveguide mode amplitude extraction
-# - NearToFarTransform: Far-field radiation pattern calculation
-# - ReflectionTransmission: S-parameter calculation
+from .base import Monitor
+from .field import FieldMonitor
 
-__all__ = []
+# Monitor implementations:
+# - FieldMonitor: Spatial and temporal field sampling ✓
+# - FluxMonitor: Power flux calculation through surfaces (to be implemented)
+# - ModeMonitor: Waveguide mode amplitude extraction (to be implemented)
+# - NearToFarTransform: Far-field radiation pattern calculation (to be implemented)
+# - ReflectionTransmission: S-parameter calculation (to be implemented)
+
+__all__ = [
+    "Monitor",
+    "FieldMonitor",
+]

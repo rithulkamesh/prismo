@@ -9,12 +9,39 @@ This module provides various electromagnetic sources:
 - Total-field/scattered-field (TFSF) sources
 """
 
-# Source implementations:
-# - PointSource: Point dipole sources
-# - PlaneWave: Plane wave excitation
-# - GaussianBeam: Focused Gaussian beam sources
-# - ModeSource: Waveguide eigenmode sources
-# - TFSFSource: Total-field/scattered-field formulation
-# - PulseSource: Temporal pulse envelopes
+from .base import Source
+from .waveform import (
+    Waveform,
+    ContinuousWave,
+    GaussianPulse,
+    RickerWavelet,
+    CustomWaveform,
+)
+from .point import PointSource, ElectricDipole, MagneticDipole
+from .gaussian import GaussianBeamSource
+from .plane_wave import PlaneWaveSource
+from .tfsf import TFSFSource
 
-__all__ = []
+# Source implementations:
+# - PointSource: Point dipole sources ✓
+# - ElectricDipole: Electric field point source ✓
+# - MagneticDipole: Magnetic field point source ✓
+# - PlaneWaveSource: Plane wave excitation ✓
+# - GaussianBeamSource: Focused Gaussian beam sources ✓
+# - TFSFSource: Total-field/scattered-field formulation ✓
+# - ModeSource: Waveguide eigenmode sources (to be implemented)
+
+__all__ = [
+    "Source",
+    "Waveform",
+    "ContinuousWave",
+    "GaussianPulse",
+    "RickerWavelet",
+    "CustomWaveform",
+    "PointSource",
+    "ElectricDipole",
+    "MagneticDipole",
+    "GaussianBeamSource",
+    "PlaneWaveSource",
+    "TFSFSource",
+]
