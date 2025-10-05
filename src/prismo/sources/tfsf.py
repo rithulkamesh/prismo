@@ -7,7 +7,7 @@ The TFSF formulation separates the simulation domain into a total-field region
 waves without numerical artifacts.
 
 Reference:
-Taflove, A., & Hagness, S. C. (2005). Computational Electrodynamics: 
+Taflove, A., & Hagness, S. C. (2005). Computational Electrodynamics:
 The Finite-Difference Time-Domain Method (3rd ed.). Artech House.
 """
 
@@ -23,13 +23,13 @@ from prismo.sources.waveform import Waveform, GaussianPulse, ContinuousWave
 class TFSFSource(Source):
     """
     Total-Field/Scattered-Field (TFSF) plane wave source.
-    
+
     This source implements the TFSF formulation for injecting plane waves
     into the FDTD grid. The TFSF boundary separates the computational domain
     into two regions:
     - Total-field region (interior): Contains incident + scattered fields
     - Scattered-field region (exterior): Contains only scattered fields
-    
+
     Parameters
     ----------
     center : Tuple[float, float, float]
@@ -199,9 +199,7 @@ class TFSFSource(Source):
 
         key = (self.direction, self.polarization)
         if key not in direction_map:
-            raise ValueError(
-                f"Invalid direction-polarization combination: {key}"
-            )
+            raise ValueError(f"Invalid direction-polarization combination: {key}")
 
         self._e_component = direction_map[key]["E"]
         self._h_component = direction_map[key]["H"]
@@ -291,17 +289,26 @@ class TFSFSource(Source):
         h_amplitude = h_amplitude / eta0
 
         # Get TFSF boundary information
-        bbox_min, bbox_max = self._tfsf_boundaries["bbox_min"], self._tfsf_boundaries["bbox_max"]
+        bbox_min, bbox_max = (
+            self._tfsf_boundaries["bbox_min"],
+            self._tfsf_boundaries["bbox_max"],
+        )
         direction = self._tfsf_boundaries["direction"]
         direction_sign = self._tfsf_boundaries["direction_sign"]
 
         # Apply TFSF corrections based on propagation direction
         if direction == "x":
-            self._apply_tfsf_x(fields, bbox_min, bbox_max, e_amplitude, h_amplitude, direction_sign)
+            self._apply_tfsf_x(
+                fields, bbox_min, bbox_max, e_amplitude, h_amplitude, direction_sign
+            )
         elif direction == "y":
-            self._apply_tfsf_y(fields, bbox_min, bbox_max, e_amplitude, h_amplitude, direction_sign)
+            self._apply_tfsf_y(
+                fields, bbox_min, bbox_max, e_amplitude, h_amplitude, direction_sign
+            )
         elif direction == "z":
-            self._apply_tfsf_z(fields, bbox_min, bbox_max, e_amplitude, h_amplitude, direction_sign)
+            self._apply_tfsf_z(
+                fields, bbox_min, bbox_max, e_amplitude, h_amplitude, direction_sign
+            )
 
     def _apply_tfsf_x(
         self,

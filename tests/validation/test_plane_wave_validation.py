@@ -97,14 +97,18 @@ class TestPlaneWavePropagation:
         measured_phase_shift = 2 * np.pi * freq * abs(time_shift)
 
         # Check phase shift is reasonable (within 20% due to numerical dispersion)
-        phase_error = abs(measured_phase_shift - expected_phase_shift) / expected_phase_shift
+        phase_error = (
+            abs(measured_phase_shift - expected_phase_shift) / expected_phase_shift
+        )
         assert phase_error < 0.2, f"Phase shift error {phase_error:.1%} exceeds 20%"
 
         # Check amplitude is consistent (wave hasn't attenuated significantly)
         amp1 = np.max(np.abs(signal1_steady))
         amp2 = np.max(np.abs(signal2_steady))
         amp_ratio = amp2 / amp1
-        assert 0.9 < amp_ratio < 1.1, f"Amplitude ratio {amp_ratio:.3f} indicates attenuation"
+        assert (
+            0.9 < amp_ratio < 1.1
+        ), f"Amplitude ratio {amp_ratio:.3f} indicates attenuation"
 
     def test_plane_wave_wavelength(self):
         """Test that simulated wavelength matches theoretical wavelength."""
@@ -155,18 +159,25 @@ class TestPlaneWavePropagation:
         # Find peaks in the spatial profile
         peak_indices = []
         for i in range(1, len(field_profile) - 1):
-            if field_profile[i] > field_profile[i - 1] and field_profile[i] > field_profile[i + 1]:
+            if (
+                field_profile[i] > field_profile[i - 1]
+                and field_profile[i] > field_profile[i + 1]
+            ):
                 if field_profile[i] > 0.5 * np.max(field_profile):
                     peak_indices.append(i)
 
         # Calculate average distance between peaks (should be one wavelength)
         if len(peak_indices) >= 2:
-            peak_distances = np.diff(peak_indices) * (1.0 / sim.resolution)  # Convert to physical units
+            peak_distances = np.diff(peak_indices) * (
+                1.0 / sim.resolution
+            )  # Convert to physical units
             measured_wavelength = np.mean(peak_distances)
 
             # Check wavelength accuracy (within 10%)
             wavelength_error = abs(measured_wavelength - wavelength) / wavelength
-            assert wavelength_error < 0.1, f"Wavelength error {wavelength_error:.1%} exceeds 10%"
+            assert (
+                wavelength_error < 0.1
+            ), f"Wavelength error {wavelength_error:.1%} exceeds 10%"
         else:
             pytest.skip("Not enough spatial oscillations to measure wavelength")
 
@@ -264,7 +275,7 @@ class TestNumericalDispersion:
         freqs = np.fft.fftfreq(len(field_profile), d=1.0 / sim.resolution)
 
         # Find peak frequency (spatial frequency)
-        peak_idx = np.argmax(np.abs(fft[1:len(fft) // 2])) + 1
+        peak_idx = np.argmax(np.abs(fft[1 : len(fft) // 2])) + 1
         spatial_freq = abs(freqs[peak_idx])
         measured_wavelength = 1.0 / spatial_freq if spatial_freq > 0 else 0
 
@@ -272,7 +283,9 @@ class TestNumericalDispersion:
         if measured_wavelength > 0:
             dispersion_error = abs(measured_wavelength - wavelength) / wavelength
             # High resolution should give < 5% error
-            assert dispersion_error < 0.05, f"Dispersion error {dispersion_error:.1%} exceeds 5%"
+            assert (
+                dispersion_error < 0.05
+            ), f"Dispersion error {dispersion_error:.1%} exceeds 5%"
 
 
 class TestSourceStability:
@@ -339,7 +352,9 @@ class TestSourceStability:
         amp_mean = np.mean(amplitudes)
         amp_variation = amp_std / amp_mean if amp_mean > 0 else 0
 
-        assert amp_variation < 0.1, f"Amplitude variation {amp_variation:.1%} exceeds 10%"
+        assert (
+            amp_variation < 0.1
+        ), f"Amplitude variation {amp_variation:.1%} exceeds 10%"
 
     def test_gaussian_pulse_shape(self):
         """Test that Gaussian pulse maintains expected shape."""
