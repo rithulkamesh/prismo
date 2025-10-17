@@ -7,9 +7,12 @@ This guide will help you get started with Prismo and learn how to use its variou
 
 installation
 quickstart
-simulations
+gpu_acceleration
 materials
+simulations
 sources_monitors
-visualization
+mode_analysis
 advanced
+data_export
+visualization
 ```

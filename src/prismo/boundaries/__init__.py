@@ -1,19 +1,13 @@
 """
 Boundary conditions for FDTD simulations.
 
-This module implements various boundary conditions:
-- Absorbing boundaries (PML, CPML)
-- Periodic boundaries (Bloch conditions)
-- Perfect electric/magnetic conductor boundaries
-- Waveguide mode ports
+This module provides various boundary condition implementations including
+PML absorbing boundaries, periodic boundaries, and perfect conductors.
 """
 
-# Boundary condition implementations:
-# - PML: Perfectly Matched Layer absorbing boundary
-# - CPML: Convolutional PML implementation
-# - PeriodicBoundary: Periodic and Bloch boundary conditions
-# - PECBoundary: Perfect Electric Conductor
-# - PMCBoundary: Perfect Magnetic Conductor
-# - ModePort: Waveguide mode injection/extraction
+from .pml import CPML, PMLParams
 
-__all__ = []
+__all__ = [
+    "CPML",
+    "PMLParams",
+]

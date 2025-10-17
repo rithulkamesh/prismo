@@ -6,20 +6,19 @@ from FDTD simulations:
 - Field probes and samplers
 - Power flux monitors
 - Mode monitors for waveguides
-- Near-to-far field transforms
+- DFT monitors for frequency-domain analysis
 """
 
 from .base import Monitor
 from .field import FieldMonitor
-
-# Monitor implementations:
-# - FieldMonitor: Spatial and temporal field sampling ✓
-# - FluxMonitor: Power flux calculation through surfaces (to be implemented)
-# - ModeMonitor: Waveguide mode amplitude extraction (to be implemented)
-# - NearToFarTransform: Far-field radiation pattern calculation (to be implemented)
-# - ReflectionTransmission: S-parameter calculation (to be implemented)
+from .dft import DFTMonitor
+from .flux import FluxMonitor
+from .mode_monitor import ModeExpansionMonitor
 
 __all__ = [
     "Monitor",
     "FieldMonitor",
+    "DFTMonitor",
+    "FluxMonitor",
+    "ModeExpansionMonitor",
 ]

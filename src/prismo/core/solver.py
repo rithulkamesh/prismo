@@ -11,10 +11,11 @@ The curl operations are discretized using finite differences on the staggered
 Yee grid to maintain second-order accuracy.
 """
 
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Union
 import numpy as np
 from .grid import YeeGrid
 from .fields import ElectromagneticFields
+from prismo.backends import Backend, get_backend
 
 
 class MaxwellUpdater:
@@ -35,14 +36,28 @@ class MaxwellUpdater:
     """
 
     def __init__(
-        self, grid: YeeGrid, dt: float, material_arrays: Optional[dict] = None
+        self,
+        grid: YeeGrid,
+        dt: float,
+        material_arrays: Optional[dict] = None,
+        backend: Optional[Union[str, Backend]] = None,
     ):
         self.grid = grid
         self.dt = dt
 
+        # Initialize backend
+        if isinstance(backend, str):
+            self.backend = get_backend(backend)
+        elif isinstance(backend, Backend):
+            self.backend = backend
+        elif backend is None:
+            self.backend = get_backend()  # Auto-select
+        else:
+            raise TypeError("backend must be a Backend instance or string name")
+
         # Physical constants
         self.eps0 = 8.854187817e-12  # Vacuum permittivity (F/m)
-        self.mu0 = 4 * np.pi * 1e-7  # Vacuum permeability (H/m)
+        self.mu0 = 4 * self.backend.pi * 1e-7  # Vacuum permeability (H/m)
         self.c = 299792458.0  # Speed of light (m/s)
 
         # Validate Courant condition
@@ -65,24 +80,32 @@ class MaxwellUpdater:
 
         if material_arrays is None:
             # Vacuum everywhere
-            self.eps_rel = np.ones(
-                (nx, ny, nz), dtype=np.float64
+            self.eps_rel = self.backend.ones(
+                (nx, ny, nz), dtype=self.backend.float64
             )  # Relative permittivity
-            self.mu_rel = np.ones(
-                (nx, ny, nz), dtype=np.float64
+            self.mu_rel = self.backend.ones(
+                (nx, ny, nz), dtype=self.backend.float64
             )  # Relative permeability
-            self.sigma_e = np.zeros(
-                (nx, ny, nz), dtype=np.float64
+            self.sigma_e = self.backend.zeros(
+                (nx, ny, nz), dtype=self.backend.float64
             )  # Electric conductivity
-            self.sigma_m = np.zeros(
-                (nx, ny, nz), dtype=np.float64
+            self.sigma_m = self.backend.zeros(
+                (nx, ny, nz), dtype=self.backend.float64
             )  # Magnetic conductivity (usually 0)
         else:
-            # Use provided material arrays
-            self.eps_rel = material_arrays.get("eps_rel", np.ones((nx, ny, nz)))
-            self.mu_rel = material_arrays.get("mu_rel", np.ones((nx, ny, nz)))
-            self.sigma_e = material_arrays.get("sigma_e", np.zeros((nx, ny, nz)))
-            self.sigma_m = material_arrays.get("sigma_m", np.zeros((nx, ny, nz)))
+            # Use provided material arrays (convert to backend arrays)
+            self.eps_rel = self.backend.asarray(
+                material_arrays.get("eps_rel", np.ones((nx, ny, nz)))
+            )
+            self.mu_rel = self.backend.asarray(
+                material_arrays.get("mu_rel", np.ones((nx, ny, nz)))
+            )
+            self.sigma_e = self.backend.asarray(
+                material_arrays.get("sigma_e", np.zeros((nx, ny, nz)))
+            )
+            self.sigma_m = self.backend.asarray(
+                material_arrays.get("sigma_m", np.zeros((nx, ny, nz)))
+            )
 
     def _compute_update_coefficients(self) -> None:
         """Precompute update coefficients for E and H field updates."""
@@ -554,15 +577,26 @@ class FDTDSolver:
         grid: YeeGrid,
         dt: Optional[float] = None,
         material_arrays: Optional[dict] = None,
+        backend: Optional[Union[str, Backend]] = None,
     ):
         self.grid = grid
+
+        # Initialize backend
+        if isinstance(backend, str):
+            self.backend = get_backend(backend)
+        elif isinstance(backend, Backend):
+            self.backend = backend
+        elif backend is None:
+            self.backend = get_backend()  # Auto-select
+        else:
+            raise TypeError("backend must be a Backend instance or string name")
 
         # Auto-determine time step if not provided
         if dt is None:
             dt = grid.suggest_time_step(safety_factor=0.95)
 
-        self.fields = ElectromagneticFields(grid)
-        self.updater = MaxwellUpdater(grid, dt, material_arrays)
+        self.fields = ElectromagneticFields(grid, backend=self.backend)
+        self.updater = MaxwellUpdater(grid, dt, material_arrays, backend=self.backend)
 
         self.time = 0.0
         self.step_count = 0

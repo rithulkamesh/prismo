@@ -1,18 +1,28 @@
 """
-Geometric primitives and mesh generation.
+Geometry module for defining structures in FDTD simulations.
 
-This module provides tools for defining simulation geometries:
-- Basic geometric shapes (rectangles, circles, polygons)
-- Boolean operations on shapes
-- Mesh generation and refinement
-- CAD import/export capabilities
+This module provides geometric shapes and tools for defining material
+distributions in the simulation domain.
 """
 
-# Geometry implementations:
-# - Shape: Base class for geometric shapes
-# - Rectangle, Circle, Polygon: Basic geometric primitives
-# - BooleanOperation: Union, intersection, difference operations
-# - Mesh: Grid generation and refinement
-# - STLImport: CAD file import functionality
+from .shapes import (
+    Shape,
+    Material,
+    Box,
+    Sphere,
+    Cylinder,
+    Polygon,
+    CustomShape,
+    GeometryGroup,
+)
 
-__all__ = []
+__all__ = [
+    "Shape",
+    "Material",
+    "Box",
+    "Sphere",
+    "Cylinder",
+    "Polygon",
+    "CustomShape",
+    "GeometryGroup",
+]

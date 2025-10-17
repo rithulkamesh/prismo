@@ -8,6 +8,7 @@ electromagnetic field components (Ex, Ey, Ez, Hx, Hy, Hz) on the Yee grid.
 from typing import Tuple, Optional, Union, Literal, Dict, Any
 import numpy as np
 from .grid import YeeGrid
+from prismo.backends import Backend, get_backend
 
 
 FieldComponent = Literal["Ex", "Ey", "Ez", "Hx", "Hy", "Hz"]
@@ -30,12 +31,32 @@ class ElectromagneticFields:
         Data type for field arrays, default=np.float64.
     """
 
-    def __init__(self, grid: YeeGrid, dtype: np.dtype = np.float64):
+    def __init__(
+        self,
+        grid: YeeGrid,
+        dtype: Any = None,
+        backend: Optional[Union[str, Backend]] = None,
+    ):
         self.grid = grid
-        self.dtype = dtype
+
+        # Initialize backend
+        if isinstance(backend, str):
+            self.backend = get_backend(backend)
+        elif isinstance(backend, Backend):
+            self.backend = backend
+        elif backend is None:
+            self.backend = get_backend()  # Auto-select
+        else:
+            raise TypeError("backend must be a Backend instance or string name")
+
+        # Set dtype
+        if dtype is None:
+            self.dtype = self.backend.float64
+        else:
+            self.dtype = dtype
 
         # Initialize field component arrays
-        self._fields: Dict[FieldComponent, np.ndarray] = {}
+        self._fields: Dict[FieldComponent, Any] = {}
         self._initialize_fields()
 
     def _initialize_fields(self) -> None:
@@ -44,9 +65,9 @@ class ElectromagneticFields:
 
         for component in components:
             shape = self.grid.get_field_shape(component)
-            self._fields[component] = np.zeros(shape, dtype=self.dtype)
+            self._fields[component] = self.backend.zeros(shape, dtype=self.dtype)
 
-    def __getitem__(self, component: FieldComponent) -> np.ndarray:
+    def __getitem__(self, component: FieldComponent) -> Any:
         """
         Access field component by name.
 
@@ -57,16 +78,14 @@ class ElectromagneticFields:
 
         Returns
         -------
-        ndarray
-            Field component array.
+        array
+            Field component array (backend-specific).
         """
         if component not in self._fields:
             raise KeyError(f"Unknown field component: {component}")
         return self._fields[component]
 
-    def __setitem__(
-        self, component: FieldComponent, value: Union[np.ndarray, float]
-    ) -> None:
+    def __setitem__(self, component: FieldComponent, value: Union[Any, float]) -> None:
         """
         Set field component values.
 
@@ -74,7 +93,7 @@ class ElectromagneticFields:
         ----------
         component : str
             Field component name.
-        value : ndarray or float
+        value : array or float
             New field values. If scalar, all elements are set to this value.
         """
         if component not in self._fields:
@@ -83,13 +102,14 @@ class ElectromagneticFields:
         if np.isscalar(value):
             self._fields[component].fill(value)
         else:
-            if np.array(value).shape != self._fields[component].shape:
+            value_arr = self.backend.asarray(value)
+            if value_arr.shape != self._fields[component].shape:
                 raise ValueError(
                     f"Shape mismatch for {component}: "
                     f"expected {self._fields[component].shape}, "
-                    f"got {np.array(value).shape}"
+                    f"got {value_arr.shape}"
                 )
-            self._fields[component][:] = value
+            self._fields[component][:] = value_arr
 
     @property
     def Ex(self) -> np.ndarray:
