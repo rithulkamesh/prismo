@@ -10,8 +10,8 @@ from FDTD simulations:
 """
 
 from .base import Monitor
-from .field import FieldMonitor
 from .dft import DFTMonitor
+from .field import FieldMonitor
 from .flux import FluxMonitor
 from .mode_monitor import ModeExpansionMonitor
 

@@ -5,8 +5,9 @@ This module provides functionality to export simulation results to Apache Parque
 format using Polars for efficient columnar storage and fast I/O.
 """
 
-from typing import Dict, Any, Optional
 from pathlib import Path
+from typing import Any, Optional
+
 import numpy as np
 
 try:
@@ -48,9 +49,9 @@ class ParquetExporter(Exporter):
     def export_fields(
         self,
         filename: str,
-        fields: Dict[str, Any],
-        coordinates: Dict[str, Any],
-        metadata: Optional[Dict[str, Any]] = None,
+        fields: dict[str, Any],
+        coordinates: dict[str, Any],
+        metadata: Optional[dict[str, Any]] = None,
     ) -> Path:
         """
         Export field data to Parquet format.
@@ -141,7 +142,7 @@ class ParquetExporter(Exporter):
         filename: str,
         frequencies: Any,
         spectrum: Any,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> Path:
         """
         Export spectrum data to Parquet.
@@ -195,8 +196,8 @@ class ParquetExporter(Exporter):
         self,
         filename: str,
         frequencies: Any,
-        sparameters: Dict[str, Any],
-        metadata: Optional[Dict[str, Any]] = None,
+        sparameters: dict[str, Any],
+        metadata: Optional[dict[str, Any]] = None,
     ) -> Path:
         """
         Export S-parameters to Parquet.
@@ -253,8 +254,8 @@ class ParquetExporter(Exporter):
         self,
         filename: str,
         time: Any,
-        data: Dict[str, Any],
-        metadata: Optional[Dict[str, Any]] = None,
+        data: dict[str, Any],
+        metadata: Optional[dict[str, Any]] = None,
     ) -> Path:
         """
         Export time-series data to Parquet.

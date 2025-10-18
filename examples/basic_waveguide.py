@@ -5,17 +5,16 @@ This example demonstrates a simple 2D waveguide simulation with a Gaussian pulse
 exciting a waveguide mode.
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-
-import sys
 import os
+import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 # Add the src directory to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 
-from prismo import Simulation, GaussianBeamSource, FieldMonitor
+from prismo import FieldMonitor, GaussianBeamSource, Simulation
 
 
 def run_basic_simulation():

@@ -5,8 +5,10 @@ This module implements the Backend interface using CuPy for
 GPU-accelerated array operations with CUDA.
 """
 
-from typing import Any, Tuple, Optional, Union
+from typing import Any, Optional, Union
+
 import numpy as np
+
 from .base import Backend
 
 try:
@@ -49,15 +51,15 @@ class CuPyBackend(Backend):
     def is_gpu(self) -> bool:
         return True
 
-    def zeros(self, shape: Tuple[int, ...], dtype: Any = None) -> Any:
+    def zeros(self, shape: tuple[int, ...], dtype: Any = None) -> Any:
         with self.device:
             return cp.zeros(shape, dtype=dtype or cp.float64)
 
-    def ones(self, shape: Tuple[int, ...], dtype: Any = None) -> Any:
+    def ones(self, shape: tuple[int, ...], dtype: Any = None) -> Any:
         with self.device:
             return cp.ones(shape, dtype=dtype or cp.float64)
 
-    def empty(self, shape: Tuple[int, ...], dtype: Any = None) -> Any:
+    def empty(self, shape: tuple[int, ...], dtype: Any = None) -> Any:
         with self.device:
             return cp.empty(shape, dtype=dtype or cp.float64)
 
@@ -93,22 +95,22 @@ class CuPyBackend(Backend):
         return cp.abs(array)
 
     def sum(
-        self, array: Any, axis: Optional[Union[int, Tuple[int, ...]]] = None
+        self, array: Any, axis: Optional[Union[int, tuple[int, ...]]] = None
     ) -> Any:
         return cp.sum(array, axis=axis)
 
     def max(
-        self, array: Any, axis: Optional[Union[int, Tuple[int, ...]]] = None
+        self, array: Any, axis: Optional[Union[int, tuple[int, ...]]] = None
     ) -> Any:
         return cp.max(array, axis=axis)
 
     def min(
-        self, array: Any, axis: Optional[Union[int, Tuple[int, ...]]] = None
+        self, array: Any, axis: Optional[Union[int, tuple[int, ...]]] = None
     ) -> Any:
         return cp.min(array, axis=axis)
 
     def mean(
-        self, array: Any, axis: Optional[Union[int, Tuple[int, ...]]] = None
+        self, array: Any, axis: Optional[Union[int, tuple[int, ...]]] = None
     ) -> Any:
         return cp.mean(array, axis=axis)
 

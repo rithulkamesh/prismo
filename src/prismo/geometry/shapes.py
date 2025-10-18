@@ -5,10 +5,11 @@ This module provides classes for common geometric shapes and their
 rasterization onto the FDTD grid.
 """
 
-from typing import Tuple, Optional, Callable
-from dataclasses import dataclass
-import numpy as np
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Callable, Optional
+
+import numpy as np
 
 
 @dataclass
@@ -46,7 +47,7 @@ class Shape(ABC):
         Shape center coordinates.
     """
 
-    def __init__(self, material: Material, center: Tuple[float, float, float]):
+    def __init__(self, material: Material, center: tuple[float, float, float]):
         self.material = material
         self.center = np.array(center)
 
@@ -114,8 +115,8 @@ class Box(Shape):
     def __init__(
         self,
         material: Material,
-        center: Tuple[float, float, float],
-        size: Tuple[float, float, float],
+        center: tuple[float, float, float],
+        size: tuple[float, float, float],
     ):
         super().__init__(material, center)
         self.size = np.array(size)
@@ -146,7 +147,7 @@ class Sphere(Shape):
     """
 
     def __init__(
-        self, material: Material, center: Tuple[float, float, float], radius: float
+        self, material: Material, center: tuple[float, float, float], radius: float
     ):
         super().__init__(material, center)
         self.radius = radius
@@ -179,7 +180,7 @@ class Cylinder(Shape):
     def __init__(
         self,
         material: Material,
-        center: Tuple[float, float, float],
+        center: tuple[float, float, float],
         radius: float,
         height: float,
         axis: str = "z",
@@ -300,7 +301,7 @@ class CustomShape(Shape):
     def __init__(
         self,
         material: Material,
-        center: Tuple[float, float, float],
+        center: tuple[float, float, float],
         function: Callable[[np.ndarray], np.ndarray],
     ):
         super().__init__(material, center)
@@ -336,7 +337,7 @@ class GeometryGroup:
 
     def rasterize(
         self, x: np.ndarray, y: np.ndarray, z: Optional[np.ndarray] = None
-    ) -> Tuple[np.ndarray, list]:
+    ) -> tuple[np.ndarray, list]:
         """
         Rasterize combined geometry.
 

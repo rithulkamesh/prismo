@@ -22,70 +22,32 @@ from . import (
     visualization,
 )
 
-# Import key classes for top-level access
-from .core.simulation import Simulation
-from .core.grid import YeeGrid, GridSpec
-from .core.solver import FDTDSolver, MaxwellUpdater
-from .core.fields import ElectromagneticFields
+# Analysis
+from .analysis import SParameterAnalyzer, export_touchstone
 
 # Backends
-from .backends import Backend, get_backend, set_backend, list_available_backends
-
-# Sources
-from .sources.base import Source
-from .sources.point import ElectricDipole, MagneticDipole
-from .sources.gaussian import GaussianBeamSource
-from .sources.plane_wave import PlaneWaveSource
-from .sources.tfsf import TFSFSource
-from .sources.mode import ModeSource, ModeLauncher
-
-# Monitors
-from .monitors.field import FieldMonitor
-from .monitors.dft import DFTMonitor
-from .monitors.flux import FluxMonitor
-from .monitors.mode_monitor import ModeExpansionMonitor
+from .backends import Backend, get_backend, list_available_backends, set_backend
 
 # Boundaries
 from .boundaries.pml import CPML, PMLParams
+from .core.fields import ElectromagneticFields
+from .core.grid import GridSpec, YeeGrid
 
-# Materials
-from .materials.dispersion import (
-    DispersiveMaterial,
-    LorentzMaterial,
-    DrudeMaterial,
-    DebyeMaterial,
-    SellmeierMaterial,
-    LorentzPole,
-    DrudePole,
-    DebyePole,
-)
-from .materials.library import get_material, list_materials, add_material
-from .materials.ade import ADESolver, ADEManager
-from .materials.tensor import (
-    TensorMaterial,
-    TensorComponents,
-    AnisotropicUpdater,
-    create_uniaxial_material,
-    create_biaxial_material,
-)
+# Import key classes for top-level access
+from .core.simulation import Simulation
+from .core.solver import FDTDSolver, MaxwellUpdater
 
 # Geometry
 from .geometry import (
-    Shape,
-    Material,
     Box,
-    Sphere,
-    Cylinder,
-    Polygon,
     CustomShape,
+    Cylinder,
     GeometryGroup,
+    Material,
+    Polygon,
+    Shape,
+    Sphere,
 )
-
-# Mode solver
-from .modes import ModeSolver, WaveguideMode
-
-# Analysis
-from .analysis import SParameterAnalyzer, export_touchstone
 
 # Data export
 from .io import CSVExporter, ParquetExporter
@@ -97,9 +59,47 @@ from .io.lumerical import (
     LumericalMaterialDB,
     import_lumerical_material,
 )
+from .materials.ade import ADEManager, ADESolver
+
+# Materials
+from .materials.dispersion import (
+    DebyeMaterial,
+    DebyePole,
+    DispersiveMaterial,
+    DrudeMaterial,
+    DrudePole,
+    LorentzMaterial,
+    LorentzPole,
+    SellmeierMaterial,
+)
+from .materials.library import add_material, get_material, list_materials
+from .materials.tensor import (
+    AnisotropicUpdater,
+    TensorComponents,
+    TensorMaterial,
+    create_biaxial_material,
+    create_uniaxial_material,
+)
+
+# Mode solver
+from .modes import ModeSolver, WaveguideMode
+from .monitors.dft import DFTMonitor
+
+# Monitors
+from .monitors.field import FieldMonitor
+from .monitors.flux import FluxMonitor
+from .monitors.mode_monitor import ModeExpansionMonitor
 
 # Optimization
 from .optimization import ParameterSweep, SweepParameter
+
+# Sources
+from .sources.base import Source
+from .sources.gaussian import GaussianBeamSource
+from .sources.mode import ModeLauncher, ModeSource
+from .sources.plane_wave import PlaneWaveSource
+from .sources.point import ElectricDipole, MagneticDipole
+from .sources.tfsf import TFSFSource
 
 # Version information
 __version__ = "0.1.0-dev"

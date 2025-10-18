@@ -5,14 +5,15 @@ This module implements monitors that decompose electromagnetic fields into
 waveguide mode coefficients using overlap integrals.
 """
 
-from typing import List, Tuple, Dict, Optional, Union
+from typing import Optional, Union
+
 import numpy as np
 
-from prismo.core.grid import YeeGrid
-from prismo.core.fields import ElectromagneticFields
-from prismo.monitors.base import Monitor
-from prismo.modes.solver import WaveguideMode
 from prismo.backends import Backend, get_backend
+from prismo.core.fields import ElectromagneticFields
+from prismo.core.grid import YeeGrid
+from prismo.modes.solver import WaveguideMode
+from prismo.monitors.base import Monitor
 
 
 class ModeExpansionMonitor(Monitor):
@@ -45,11 +46,11 @@ class ModeExpansionMonitor(Monitor):
 
     def __init__(
         self,
-        center: Tuple[float, float, float],
-        size: Tuple[float, float, float],
-        modes: List[WaveguideMode],
+        center: tuple[float, float, float],
+        size: tuple[float, float, float],
+        modes: list[WaveguideMode],
         direction: str = "x",
-        frequencies: Optional[List[float]] = None,
+        frequencies: Optional[list[float]] = None,
         name: Optional[str] = None,
         backend: Optional[Union[str, Backend]] = None,
     ):
@@ -73,20 +74,20 @@ class ModeExpansionMonitor(Monitor):
             raise TypeError("backend must be a Backend instance or string name")
 
         # Storage for mode coefficients
-        self._mode_coeffs_time: Dict[int, List[complex]] = {
+        self._mode_coeffs_time: dict[int, list[complex]] = {
             i: [] for i in range(len(modes))
         }
-        self._time_points: List[float] = []
+        self._time_points: list[float] = []
 
         # Frequency-domain storage
         if frequencies is not None:
             self.omega = 2 * np.pi * np.array(frequencies)
-            self._mode_coeffs_freq: Dict[int, np.ndarray] = {
+            self._mode_coeffs_freq: dict[int, np.ndarray] = {
                 i: np.zeros(len(frequencies), dtype=complex) for i in range(len(modes))
             }
 
         # Mode profiles interpolated to monitor grid
-        self._interpolated_modes: List[Dict[str, np.ndarray]] = []
+        self._interpolated_modes: list[dict[str, np.ndarray]] = []
 
     def initialize(self, grid: YeeGrid) -> None:
         """Initialize the mode expansion monitor on the grid."""
@@ -105,7 +106,6 @@ class ModeExpansionMonitor(Monitor):
         The modes may be defined on a different grid than the simulation,
         so we need to interpolate.
         """
-        from scipy.interpolate import RegularGridInterpolator
 
         for mode in self.modes:
             # Create interpolators for mode fields
@@ -165,7 +165,7 @@ class ModeExpansionMonitor(Monitor):
 
     def _compute_mode_coefficients(
         self, fields: ElectromagneticFields
-    ) -> List[complex]:
+    ) -> list[complex]:
         """
         Compute mode coefficients using overlap integrals.
 
@@ -193,7 +193,7 @@ class ModeExpansionMonitor(Monitor):
         dx = 1.0  # Will be updated from actual grid
         dy = 1.0
 
-        for mode_idx, mode in enumerate(self.modes):
+        for _mode_idx, mode in enumerate(self.modes):
             # Use mode_matching utility for accurate overlap
             coeff = compute_mode_overlap(
                 Ex_sim,
@@ -230,7 +230,7 @@ class ModeExpansionMonitor(Monitor):
 
     def get_mode_coefficient(
         self, mode_index: int, domain: str = "time"
-    ) -> Union[np.ndarray, List[complex]]:
+    ) -> Union[np.ndarray, list[complex]]:
         """
         Get mode coefficient time series or frequency spectrum.
 
@@ -257,7 +257,7 @@ class ModeExpansionMonitor(Monitor):
 
     def separate_forward_backward(
         self, mode_index: int, frequency_index: int
-    ) -> Tuple[complex, complex]:
+    ) -> tuple[complex, complex]:
         """
         Separate forward and backward propagating mode amplitudes.
 
@@ -349,7 +349,7 @@ class ModeExpansionMonitor(Monitor):
         self,
         source_mode_index: int = 0,
         source_power: float = 1.0,
-    ) -> Dict[str, np.ndarray]:
+    ) -> dict[str, np.ndarray]:
         """
         Compute S-parameters from mode coefficients.
 
@@ -437,7 +437,7 @@ class ModeExpansionMonitor(Monitor):
                 if j == source_mode_index:
                     # This mode was excited
                     # Reflection at input
-                    refl_coeff = other_monitor._mode_coeffs_freq[i][frequency_index]
+                    other_monitor._mode_coeffs_freq[i][frequency_index]
                     # Transmission at output
                     trans_coeff = self._mode_coeffs_freq[i][frequency_index]
 

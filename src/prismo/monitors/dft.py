@@ -5,13 +5,14 @@ This module implements on-the-fly DFT computation during time-domain simulations
 allowing efficient extraction of frequency-domain fields without storing all time steps.
 """
 
-from typing import List, Tuple, Dict, Optional, Union
+from typing import Optional, Union
+
 import numpy as np
 
-from prismo.core.grid import YeeGrid
-from prismo.core.fields import ElectromagneticFields, FieldComponent
-from prismo.monitors.base import Monitor
 from prismo.backends import Backend, get_backend
+from prismo.core.fields import ElectromagneticFields
+from prismo.core.grid import YeeGrid
+from prismo.monitors.base import Monitor
 
 
 class DFTMonitor(Monitor):
@@ -43,10 +44,10 @@ class DFTMonitor(Monitor):
 
     def __init__(
         self,
-        center: Tuple[float, float, float],
-        size: Tuple[float, float, float],
-        frequencies: List[float],
-        components: Optional[List[str]] = None,
+        center: tuple[float, float, float],
+        size: tuple[float, float, float],
+        frequencies: list[float],
+        components: Optional[list[str]] = None,
         name: Optional[str] = None,
         backend: Optional[Union[str, Backend]] = None,
     ):
@@ -71,7 +72,7 @@ class DFTMonitor(Monitor):
             raise TypeError("backend must be a Backend instance or string name")
 
         # Storage for DFT accumulation (complex-valued)
-        self._dft_data: Dict[str, np.ndarray] = {}
+        self._dft_data: dict[str, np.ndarray] = {}
         self._time_steps = 0
         self._dt = None
 
@@ -88,7 +89,7 @@ class DFTMonitor(Monitor):
             dft_shape = (len(self.frequencies),) + shape
             self._dft_data[component] = np.zeros(dft_shape, dtype=np.complex128)
 
-    def _get_component_shape(self, component: str) -> Tuple[int, ...]:
+    def _get_component_shape(self, component: str) -> tuple[int, ...]:
         """Get the spatial shape for a field component in the monitor region."""
         # This returns the shape of the field in the monitored region
         # For simplicity, we'll use the grid shape
@@ -98,7 +99,7 @@ class DFTMonitor(Monitor):
             raise RuntimeError("Monitor must be initialized first")
 
         # Get the component indices
-        indices = self._monitor_region[component]
+        self._monitor_region[component]
 
         # For now, assume a simple point or line monitor
         # Full implementation would extract proper shapes from indices
@@ -160,7 +161,7 @@ class DFTMonitor(Monitor):
 
     def get_frequency_data(
         self, component: str, frequency_index: Optional[int] = None
-    ) -> Union[np.ndarray, Dict[float, np.ndarray]]:
+    ) -> Union[np.ndarray, dict[float, np.ndarray]]:
         """
         Get frequency-domain field data.
 

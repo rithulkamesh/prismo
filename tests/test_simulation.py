@@ -6,14 +6,13 @@ FDTD simulation process, including grid creation, source specification,
 and monitor placement.
 """
 
-import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
 from prismo.core.simulation import Simulation
-from prismo.sources.point import PointSource, ElectricDipole
-from prismo.sources.waveform import ContinuousWave, GaussianPulse
 from prismo.monitors.field import FieldMonitor
+from prismo.sources.point import ElectricDipole, PointSource
+from prismo.sources.waveform import ContinuousWave
 
 
 class TestSimulation:

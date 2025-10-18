@@ -26,40 +26,40 @@ def check_imports():
 
         # Check all major components
         from prismo import (
+            ADESolver,
             # Backends
             Backend,
-            get_backend,
-            set_backend,
-            list_available_backends,
-            # Core
-            Simulation,
-            YeeGrid,
-            GridSpec,
-            FDTDSolver,
-            # Materials
-            LorentzMaterial,
-            DrudeMaterial,
-            get_material,
-            list_materials,
-            TensorMaterial,
-            ADESolver,
-            # Monitors
-            DFTMonitor,
-            FluxMonitor,
-            ModeExpansionMonitor,
-            # Analysis
-            SParameterAnalyzer,
-            export_touchstone,
             # Export
             CSVExporter,
-            ParquetExporter,
-            # Mode solver
-            ModeSolver,
+            # Monitors
+            DFTMonitor,
+            DrudeMaterial,
+            FDTDSolver,
+            FluxMonitor,
             # Lumerical
             FSPParser,
-            import_lumerical_material,
+            GridSpec,
+            # Materials
+            LorentzMaterial,
+            ModeExpansionMonitor,
+            # Mode solver
+            ModeSolver,
             # Optimization
             ParameterSweep,
+            ParquetExporter,
+            # Core
+            Simulation,
+            # Analysis
+            SParameterAnalyzer,
+            TensorMaterial,
+            YeeGrid,
+            export_touchstone,
+            get_backend,
+            get_material,
+            import_lumerical_material,
+            list_available_backends,
+            list_materials,
+            set_backend,
         )
 
         print("✅ All core components imported successfully")
@@ -106,8 +106,9 @@ def check_materials():
     print_section("3. Checking Material Library")
 
     try:
-        import prismo
         import numpy as np
+
+        import prismo
 
         materials = prismo.list_materials()
         print(f"✅ Material library loaded: {len(materials)} materials")
@@ -144,7 +145,7 @@ def check_simulation():
             pml_layers=5,
         )
 
-        print(f"✅ Simulation created successfully")
+        print("✅ Simulation created successfully")
         print(f"   Grid dimensions: {sim.grid.dimensions}")
         print(f"   Time step: {sim.dt:.3e} s")
 
@@ -160,13 +161,13 @@ def check_monitors():
     print_section("5. Checking Monitors")
 
     try:
+
         import prismo
-        import numpy as np
 
         frequencies = [190e12, 193e12, 200e12]
 
         # DFT monitor
-        dft = prismo.DFTMonitor(
+        prismo.DFTMonitor(
             center=(0, 0, 0),
             size=(0, 1e-6, 0),
             frequencies=frequencies,
@@ -174,7 +175,7 @@ def check_monitors():
         print("✅ DFT Monitor created")
 
         # Flux monitor
-        flux = prismo.FluxMonitor(
+        prismo.FluxMonitor(
             center=(0, 0, 0),
             size=(0, 1e-6, 0),
             direction="x",
@@ -194,9 +195,11 @@ def check_export():
     print_section("6. Checking Data Export")
 
     try:
-        import prismo
-        import numpy as np
         from pathlib import Path
+
+        import numpy as np
+
+        import prismo
 
         # Create temporary output directory
         output_dir = Path("./test_output")
@@ -242,8 +245,9 @@ def check_analysis():
     print_section("7. Checking Analysis Tools")
 
     try:
-        import prismo
         import numpy as np
+
+        import prismo
 
         frequencies = np.array([190e12, 193e12, 200e12])
 

@@ -14,16 +14,16 @@ This is a 2D simulation of a straight waveguide section to demonstrate
 mode port functionality with minimal reflection.
 """
 
-import numpy as np
+
 import matplotlib.pyplot as plt
-from typing import Tuple
+import numpy as np
 
 # Import Prismo components
 try:
-    from prismo.modes.solver import ModeSolver
     from prismo.boundaries.mode_port import ModePort, ModePortConfig
-    from prismo.sources.mode import ModeSource
+    from prismo.modes.solver import ModeSolver
     from prismo.monitors.mode_monitor import ModeExpansionMonitor
+    from prismo.sources.mode import ModeSource
     from prismo.utils import mode_matching
 
     print("✓ Prismo imports successful")
@@ -37,7 +37,7 @@ def create_waveguide_structure(
     width: float = 1.5e-6,
     length: float = 10e-6,
     resolution: int = 40,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Create a simple straight waveguide structure.
 
@@ -375,7 +375,7 @@ def main():
     waveguide_width = 1.5e-6
     waveguide_length = 10e-6
 
-    print(f"Parameters:")
+    print("Parameters:")
     print(f"  Wavelength: {wavelength*1e6:.3f} μm")
     print(f"  Waveguide width: {waveguide_width*1e6:.3f} μm")
     print(f"  Waveguide length: {waveguide_length*1e6:.3f} μm")

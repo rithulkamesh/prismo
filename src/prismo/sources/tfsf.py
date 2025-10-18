@@ -11,13 +11,14 @@ Taflove, A., & Hagness, S. C. (2005). Computational Electrodynamics:
 The Finite-Difference Time-Domain Method (3rd ed.). Artech House.
 """
 
-from typing import Tuple, Dict, Optional, Union, Literal
+from typing import Literal, Optional
+
 import numpy as np
 
+from prismo.core.fields import ElectromagneticFields
 from prismo.core.grid import YeeGrid
-from prismo.core.fields import ElectromagneticFields, FieldComponent
 from prismo.sources.base import Source
-from prismo.sources.waveform import Waveform, GaussianPulse, ContinuousWave
+from prismo.sources.waveform import ContinuousWave, GaussianPulse
 
 
 class TFSFSource(Source):
@@ -61,8 +62,8 @@ class TFSFSource(Source):
 
     def __init__(
         self,
-        center: Tuple[float, float, float],
-        size: Tuple[float, float, float],
+        center: tuple[float, float, float],
+        size: tuple[float, float, float],
         direction: str,
         polarization: Literal["x", "y", "z"],
         frequency: float,
@@ -108,7 +109,7 @@ class TFSFSource(Source):
             )
 
         # Will be computed when initialized
-        self._tfsf_boundaries: Dict[str, Dict] = {}
+        self._tfsf_boundaries: dict[str, dict] = {}
         self._e_component: str = ""
         self._h_component: str = ""
 
@@ -224,7 +225,7 @@ class TFSFSource(Source):
             "direction_sign": self.direction_sign,
         }
 
-    def _get_bbox_indices(self) -> Tuple[Tuple[int, int, int], Tuple[int, int, int]]:
+    def _get_bbox_indices(self) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
         """
         Get the bounding box indices for the TFSF region.
 
@@ -313,8 +314,8 @@ class TFSFSource(Source):
     def _apply_tfsf_x(
         self,
         fields: ElectromagneticFields,
-        bbox_min: Tuple[int, int, int],
-        bbox_max: Tuple[int, int, int],
+        bbox_min: tuple[int, int, int],
+        bbox_max: tuple[int, int, int],
         e_amp: float,
         h_amp: float,
         sign: int,
@@ -346,8 +347,8 @@ class TFSFSource(Source):
     def _apply_tfsf_y(
         self,
         fields: ElectromagneticFields,
-        bbox_min: Tuple[int, int, int],
-        bbox_max: Tuple[int, int, int],
+        bbox_min: tuple[int, int, int],
+        bbox_max: tuple[int, int, int],
         e_amp: float,
         h_amp: float,
         sign: int,
@@ -377,8 +378,8 @@ class TFSFSource(Source):
     def _apply_tfsf_z(
         self,
         fields: ElectromagneticFields,
-        bbox_min: Tuple[int, int, int],
-        bbox_max: Tuple[int, int, int],
+        bbox_min: tuple[int, int, int],
+        bbox_max: tuple[int, int, int],
         e_amp: float,
         h_amp: float,
         sign: int,

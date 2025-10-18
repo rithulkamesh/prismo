@@ -5,8 +5,10 @@ This module implements the Backend interface using NumPy for
 standard CPU-based array operations.
 """
 
-from typing import Any, Tuple, Optional, Union
+from typing import Any, Optional, Union
+
 import numpy as np
+
 from .base import Backend
 
 
@@ -25,13 +27,13 @@ class NumPyBackend(Backend):
     def is_gpu(self) -> bool:
         return False
 
-    def zeros(self, shape: Tuple[int, ...], dtype: Any = None) -> np.ndarray:
+    def zeros(self, shape: tuple[int, ...], dtype: Any = None) -> np.ndarray:
         return np.zeros(shape, dtype=dtype or np.float64)
 
-    def ones(self, shape: Tuple[int, ...], dtype: Any = None) -> np.ndarray:
+    def ones(self, shape: tuple[int, ...], dtype: Any = None) -> np.ndarray:
         return np.ones(shape, dtype=dtype or np.float64)
 
-    def empty(self, shape: Tuple[int, ...], dtype: Any = None) -> np.ndarray:
+    def empty(self, shape: tuple[int, ...], dtype: Any = None) -> np.ndarray:
         return np.empty(shape, dtype=dtype or np.float64)
 
     def array(self, data: Any, dtype: Any = None) -> np.ndarray:
@@ -64,22 +66,22 @@ class NumPyBackend(Backend):
         return np.abs(array)
 
     def sum(
-        self, array: Any, axis: Optional[Union[int, Tuple[int, ...]]] = None
+        self, array: Any, axis: Optional[Union[int, tuple[int, ...]]] = None
     ) -> Any:
         return np.sum(array, axis=axis)
 
     def max(
-        self, array: Any, axis: Optional[Union[int, Tuple[int, ...]]] = None
+        self, array: Any, axis: Optional[Union[int, tuple[int, ...]]] = None
     ) -> Any:
         return np.max(array, axis=axis)
 
     def min(
-        self, array: Any, axis: Optional[Union[int, Tuple[int, ...]]] = None
+        self, array: Any, axis: Optional[Union[int, tuple[int, ...]]] = None
     ) -> Any:
         return np.min(array, axis=axis)
 
     def mean(
-        self, array: Any, axis: Optional[Union[int, Tuple[int, ...]]] = None
+        self, array: Any, axis: Optional[Union[int, tuple[int, ...]]] = None
     ) -> Any:
         return np.mean(array, axis=axis)
 

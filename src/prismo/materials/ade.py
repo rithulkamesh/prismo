@@ -6,11 +6,11 @@ the ADE method, which converts frequency-domain dispersion models (Lorentz,
 Drude, Debye) into time-domain update equations.
 """
 
-from typing import Dict, List, Optional, Union
-import numpy as np
+from typing import Optional, Union
 
 from prismo.backends import Backend, get_backend
-from .dispersion import LorentzMaterial, DrudeMaterial, DebyeMaterial
+
+from .dispersion import DebyeMaterial, DrudeMaterial, LorentzMaterial
 
 
 class ADESolver:
@@ -255,7 +255,7 @@ class ADEManager:
             raise TypeError("backend must be a Backend instance or string name")
 
         # Storage for ADE solvers and their spatial regions
-        self.ade_solvers: List[Dict] = []
+        self.ade_solvers: list[dict] = []
 
     def add_material_region(
         self,

@@ -3,8 +3,8 @@ Base exporter class for data export functionality.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
 from pathlib import Path
+from typing import Any, Optional
 
 
 class Exporter(ABC):
@@ -31,9 +31,9 @@ class Exporter(ABC):
     def export_fields(
         self,
         filename: str,
-        fields: Dict[str, Any],
-        coordinates: Dict[str, Any],
-        metadata: Optional[Dict[str, Any]] = None,
+        fields: dict[str, Any],
+        coordinates: dict[str, Any],
+        metadata: Optional[dict[str, Any]] = None,
     ) -> Path:
         """
         Export field data.
@@ -62,7 +62,7 @@ class Exporter(ABC):
         filename: str,
         frequencies: Any,
         spectrum: Any,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> Path:
         """
         Export spectrum data.
@@ -90,8 +90,8 @@ class Exporter(ABC):
         self,
         filename: str,
         frequencies: Any,
-        sparameters: Dict[str, Any],
-        metadata: Optional[Dict[str, Any]] = None,
+        sparameters: dict[str, Any],
+        metadata: Optional[dict[str, Any]] = None,
     ) -> Path:
         """
         Export S-parameters.

@@ -11,11 +11,14 @@ The curl operations are discretized using finite differences on the staggered
 Yee grid to maintain second-order accuracy.
 """
 
-from typing import Tuple, Optional, Union
+from typing import Optional, Union
+
 import numpy as np
-from .grid import YeeGrid
-from .fields import ElectromagneticFields
+
 from prismo.backends import Backend, get_backend
+
+from .fields import ElectromagneticFields
+from .grid import YeeGrid
 
 
 class MaxwellUpdater:
@@ -366,14 +369,20 @@ class MaxwellUpdater:
             # Hz is at (i, j), Ex is at (i, j+1/2), Ey is at (i+1/2, j)
 
             curl_ey_x = np.zeros_like(Hz)
-            if Ey.shape[0] > 0:
-                # ∂Ey/∂x: (Ey[i+1/2,j] - Ey[i-1/2,j])/dx
-                curl_ey_x[:-1, :] = (Ey[1:, :] - Ey[:-1, :]) / self.dx
+            if Ey.shape[0] > 1:
+                # ∂Ey/∂x: (Ey[i+1,j] - Ey[i,j])/dx
+                # Ey has shape (nx-1, ny), Hz has shape (nx, ny)
+                # Take derivative and assign to matching Hz points
+                nx_curl = min(Ey.shape[0] - 1, Hz.shape[0] - 1)
+                curl_ey_x[:nx_curl, :] = (Ey[1:nx_curl+1, :] - Ey[:nx_curl, :]) / self.dx
 
             curl_ex_y = np.zeros_like(Hz)
-            if Ex.shape[1] > 0:
-                # ∂Ex/∂y: (Ex[i,j+1/2] - Ex[i,j-1/2])/dy
-                curl_ex_y[:, :-1] = (Ex[:, 1:] - Ex[:, :-1]) / self.dy
+            if Ex.shape[1] > 1:
+                # ∂Ex/∂y: (Ex[i,j+1] - Ex[i,j])/dy
+                # Ex has shape (nx, ny-1), Hz has shape (nx, ny)
+                # Take derivative and assign to matching Hz points
+                ny_curl = min(Ex.shape[1] - 1, Hz.shape[1] - 1)
+                curl_ex_y[:, :ny_curl] = (Ex[:, 1:ny_curl+1] - Ex[:, :ny_curl]) / self.dy
 
             da_hz = self._interpolate_to_hz_points_2d(self.Da[:, :, 0])
             db_hz = self._interpolate_to_hz_points_2d(self.Db[:, :, 0])

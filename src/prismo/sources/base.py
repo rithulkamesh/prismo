@@ -5,12 +5,13 @@ This module defines the base Source class and related utilities for
 implementing various types of electromagnetic sources in FDTD simulations.
 """
 
-from typing import Tuple, Dict, Optional, Union, Literal, Protocol
-import numpy as np
 from abc import ABC, abstractmethod
+from typing import Optional
 
-from prismo.core.grid import YeeGrid
+import numpy as np
+
 from prismo.core.fields import ElectromagneticFields
+from prismo.core.grid import YeeGrid
 
 
 class Source(ABC):
@@ -32,8 +33,8 @@ class Source(ABC):
 
     def __init__(
         self,
-        center: Tuple[float, float, float],
-        size: Tuple[float, float, float],
+        center: tuple[float, float, float],
+        size: tuple[float, float, float],
         name: Optional[str] = None,
         enabled: bool = True,
     ):
@@ -44,7 +45,7 @@ class Source(ABC):
 
         # Set during initialization by the simulation
         self._grid: Optional[YeeGrid] = None
-        self._source_region: Dict[str, np.ndarray] = {}
+        self._source_region: dict[str, np.ndarray] = {}
 
     def initialize(self, grid: YeeGrid) -> None:
         """
@@ -93,7 +94,7 @@ class Source(ABC):
             ),
         }
 
-    def _compute_source_region(self) -> Tuple[int, int, int, int, int, int]:
+    def _compute_source_region(self) -> tuple[int, int, int, int, int, int]:
         """
         Compute the grid index bounds for the source region.
 

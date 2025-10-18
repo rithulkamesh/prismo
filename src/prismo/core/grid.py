@@ -6,9 +6,10 @@ scheme for FDTD electromagnetic simulations. The Yee grid staggers the electric
 and magnetic field components in space to ensure second-order accuracy.
 """
 
-from typing import Tuple, Union, Optional, Literal
-import numpy as np
 from dataclasses import dataclass
+from typing import Literal, Union
+
+import numpy as np
 
 
 @dataclass
@@ -28,8 +29,8 @@ class GridSpec:
         Number of boundary layers for PML, default=10.
     """
 
-    size: Tuple[float, float, float]
-    resolution: Union[float, Tuple[float, float, float]]
+    size: tuple[float, float, float]
+    resolution: Union[float, tuple[float, float, float]]
     boundary_layers: int = 10
 
     def __post_init__(self):
@@ -119,23 +120,23 @@ class YeeGrid:
         )
 
     @property
-    def dimensions(self) -> Tuple[int, int, int]:
+    def dimensions(self) -> tuple[int, int, int]:
         """Total grid dimensions including PML layers."""
         return (self.Nx_total, self.Ny_total, self.Nz_total)
 
     @property
-    def physical_dimensions(self) -> Tuple[int, int, int]:
+    def physical_dimensions(self) -> tuple[int, int, int]:
         """Physical grid dimensions (excluding PML layers)."""
         return (self.Nx, self.Ny, self.Nz)
 
     @property
-    def spacing(self) -> Tuple[float, float, float]:
+    def spacing(self) -> tuple[float, float, float]:
         """Grid spacing in each dimension."""
         return (self.dx, self.dy, self.dz)
 
     def get_field_shape(
         self, component: Literal["Ex", "Ey", "Ez", "Hx", "Hy", "Hz"]
-    ) -> Tuple[int, ...]:
+    ) -> tuple[int, ...]:
         """
         Get the array shape for a specific field component.
 
@@ -176,7 +177,7 @@ class YeeGrid:
 
     def get_coordinates(
         self, component: Literal["Ex", "Ey", "Ez", "Hx", "Hy", "Hz"]
-    ) -> Tuple[np.ndarray, ...]:
+    ) -> tuple[np.ndarray, ...]:
         """
         Get coordinate arrays for a specific field component.
 
@@ -238,7 +239,7 @@ class YeeGrid:
 
         return False
 
-    def get_physical_indices(self) -> Tuple[slice, slice, slice]:
+    def get_physical_indices(self) -> tuple[slice, slice, slice]:
         """
         Get slices for the physical domain (excluding PML layers).
 
@@ -324,7 +325,7 @@ class YeeGrid:
         dt_max = safety_factor / (c * np.sqrt(inv_dx_sq))
         return dt_max
 
-    def point_to_index(self, point: Tuple[float, float, float]) -> Tuple[int, int, int]:
+    def point_to_index(self, point: tuple[float, float, float]) -> tuple[int, int, int]:
         """
         Convert a physical point to grid indices.
 

@@ -5,11 +5,13 @@ This module implements the Fields class which stores and manipulates the
 electromagnetic field components (Ex, Ey, Ez, Hx, Hy, Hz) on the Yee grid.
 """
 
-from typing import Tuple, Optional, Union, Literal, Dict, Any
+from typing import Any, Literal, Optional, Union
+
 import numpy as np
-from .grid import YeeGrid
+
 from prismo.backends import Backend, get_backend
 
+from .grid import YeeGrid
 
 FieldComponent = Literal["Ex", "Ey", "Ez", "Hx", "Hy", "Hz"]
 FieldType = Literal["E", "H"]
@@ -56,7 +58,7 @@ class ElectromagneticFields:
             self.dtype = dtype
 
         # Initialize field component arrays
-        self._fields: Dict[FieldComponent, Any] = {}
+        self._fields: dict[FieldComponent, Any] = {}
         self._initialize_fields()
 
     def _initialize_fields(self) -> None:
@@ -143,7 +145,7 @@ class ElectromagneticFields:
 
     def get_electric_field_components(
         self,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Get all electric field components.
 
@@ -156,7 +158,7 @@ class ElectromagneticFields:
 
     def get_magnetic_field_components(
         self,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Get all magnetic field components.
 
@@ -169,7 +171,7 @@ class ElectromagneticFields:
 
     def get_field_type_components(
         self, field_type: FieldType
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Get all components of a specific field type.
 
@@ -235,7 +237,7 @@ class ElectromagneticFields:
     def get_field_energy(
         self,
         field_type: Optional[FieldType] = None,
-        region: Optional[Tuple[slice, ...]] = None,
+        region: Optional[tuple[slice, ...]] = None,
     ) -> float:
         """
         Calculate field energy in a specified region.
@@ -283,7 +285,7 @@ class ElectromagneticFields:
         return total_energy
 
     def get_field_magnitude(
-        self, field_type: FieldType, region: Optional[Tuple[slice, ...]] = None
+        self, field_type: FieldType, region: Optional[tuple[slice, ...]] = None
     ) -> np.ndarray:
         """
         Calculate field magnitude |F| = sqrt(Fx² + Fy² + Fz²).
@@ -371,7 +373,7 @@ class ElectromagneticFields:
                 f"Boundary condition '{boundary_type}' not implemented"
             )
 
-    def get_memory_usage(self) -> Dict[str, Any]:
+    def get_memory_usage(self) -> dict[str, Any]:
         """
         Get memory usage information for the field arrays.
 

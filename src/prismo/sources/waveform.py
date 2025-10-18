@@ -6,7 +6,8 @@ electromagnetic sources, including Gaussian pulses, continuous waves,
 and custom pulse shapes.
 """
 
-from typing import Callable, Optional, Tuple, Union, Literal
+from typing import Callable, Optional, Union
+
 import numpy as np
 
 

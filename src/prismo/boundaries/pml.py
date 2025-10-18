@@ -10,13 +10,14 @@ References:
   technology letters, 27(5), 334-339.
 """
 
-from typing import Tuple, Optional, Union, Literal
-import numpy as np
 from dataclasses import dataclass
+from typing import Optional, Union
 
-from prismo.core.grid import YeeGrid
-from prismo.core.fields import ElectromagneticFields
+import numpy as np
+
 from prismo.backends import Backend, get_backend
+from prismo.core.fields import ElectromagneticFields
+from prismo.core.grid import YeeGrid
 
 
 @dataclass
@@ -198,17 +199,14 @@ class CPML:
         # b = exp(-(sigma/kappa + alpha) * dt)
         # a = sigma / (sigma * kappa + kappa^2 * alpha) * (b - 1)
 
-        def compute_coeff_arrays(direction: str) -> Tuple[np.ndarray, np.ndarray]:
+        def compute_coeff_arrays(direction: str) -> tuple[np.ndarray, np.ndarray]:
             """Compute coefficient arrays for a given direction."""
             if direction == "x":
                 n_dim = nx
-                d = dx
             elif direction == "y":
                 n_dim = ny
-                d = dy
             else:  # z
                 n_dim = nz
-                d = dz
 
             b_array = np.ones(n_dim)
             a_array = np.zeros(n_dim)
@@ -260,7 +258,7 @@ class CPML:
 
     def update_electric_pml(
         self, fields: ElectromagneticFields, curl_h_x: any, curl_h_y: any, curl_h_z: any
-    ) -> Tuple[any, any, any]:
+    ) -> tuple[any, any, any]:
         """
         Update PML auxiliary fields for E-field and apply PML correction.
 
@@ -292,7 +290,7 @@ class CPML:
 
     def update_magnetic_pml(
         self, fields: ElectromagneticFields, curl_e_x: any, curl_e_y: any, curl_e_z: any
-    ) -> Tuple[any, any, any]:
+    ) -> tuple[any, any, any]:
         """
         Update PML auxiliary fields for H-field and apply PML correction.
 

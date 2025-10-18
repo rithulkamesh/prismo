@@ -6,7 +6,8 @@ providing array operations for FDTD computations.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Tuple, Optional, Union, Literal
+from typing import Any, Optional, Union
+
 import numpy as np
 
 
@@ -31,17 +32,17 @@ class Backend(ABC):
         pass
 
     @abstractmethod
-    def zeros(self, shape: Tuple[int, ...], dtype: Any = None) -> Any:
+    def zeros(self, shape: tuple[int, ...], dtype: Any = None) -> Any:
         """Create an array filled with zeros."""
         pass
 
     @abstractmethod
-    def ones(self, shape: Tuple[int, ...], dtype: Any = None) -> Any:
+    def ones(self, shape: tuple[int, ...], dtype: Any = None) -> Any:
         """Create an array filled with ones."""
         pass
 
     @abstractmethod
-    def empty(self, shape: Tuple[int, ...], dtype: Any = None) -> Any:
+    def empty(self, shape: tuple[int, ...], dtype: Any = None) -> Any:
         """Create an uninitialized array."""
         pass
 
@@ -93,28 +94,28 @@ class Backend(ABC):
 
     @abstractmethod
     def sum(
-        self, array: Any, axis: Optional[Union[int, Tuple[int, ...]]] = None
+        self, array: Any, axis: Optional[Union[int, tuple[int, ...]]] = None
     ) -> Any:
         """Sum array elements."""
         pass
 
     @abstractmethod
     def max(
-        self, array: Any, axis: Optional[Union[int, Tuple[int, ...]]] = None
+        self, array: Any, axis: Optional[Union[int, tuple[int, ...]]] = None
     ) -> Any:
         """Maximum of array elements."""
         pass
 
     @abstractmethod
     def min(
-        self, array: Any, axis: Optional[Union[int, Tuple[int, ...]]] = None
+        self, array: Any, axis: Optional[Union[int, tuple[int, ...]]] = None
     ) -> Any:
         """Minimum of array elements."""
         pass
 
     @abstractmethod
     def mean(
-        self, array: Any, axis: Optional[Union[int, Tuple[int, ...]]] = None
+        self, array: Any, axis: Optional[Union[int, tuple[int, ...]]] = None
     ) -> Any:
         """Mean of array elements."""
         pass

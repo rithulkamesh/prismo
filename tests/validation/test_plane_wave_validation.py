@@ -9,10 +9,10 @@ propagation, including:
 - Comparison with analytical solutions
 """
 
-import pytest
 import numpy as np
-from prismo import Simulation, TFSFSource, FieldMonitor, ElectricDipole
-from prismo.core.grid import YeeGrid, GridSpec
+import pytest
+
+from prismo import FieldMonitor, Simulation, TFSFSource
 
 
 class TestPlaneWavePropagation:
@@ -87,7 +87,7 @@ class TestPlaneWavePropagation:
         start_idx = int(3 * len(signal1) / 5)
         signal1_steady = signal1[start_idx:]
         signal2_steady = signal2[start_idx:]
-        time_steady = time_points1[start_idx:]
+        time_points1[start_idx:]
 
         # Calculate cross-correlation to find phase shift
         correlation = np.correlate(signal1_steady, signal2_steady, mode="full")

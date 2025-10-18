@@ -5,14 +5,15 @@ This module provides utilities for automatically detecting available backends
 and selecting the appropriate one based on hardware and user preferences.
 """
 
-from typing import Optional, List, Dict
 import warnings
+from typing import Optional
+
 from .base import Backend
 from .numpy_backend import NumPyBackend
 
 # Try to import CuPy backend
 try:
-    from .cupy_backend import CuPyBackend, CUPY_AVAILABLE
+    from .cupy_backend import CUPY_AVAILABLE, CuPyBackend
 except ImportError:
     CUPY_AVAILABLE = False
     CuPyBackend = None
@@ -22,7 +23,7 @@ except ImportError:
 _CURRENT_BACKEND: Optional[Backend] = None
 
 
-def list_available_backends() -> List[str]:
+def list_available_backends() -> list[str]:
     """
     List all available backends on this system.
 
@@ -46,7 +47,7 @@ def list_available_backends() -> List[str]:
     return available
 
 
-def get_backend_info() -> Dict[str, any]:
+def get_backend_info() -> dict[str, any]:
     """
     Get information about available backends and their capabilities.
 
@@ -168,7 +169,7 @@ def get_backend(backend: Optional[str] = None, device_id: int = 0) -> Backend:
         warnings.warn(
             "No backend specified. Auto-selecting CuPy (GPU) backend. "
             "Set explicitly with set_backend() or get_backend(backend='numpy')",
-            UserWarning,
+            UserWarning, stacklevel=2,
         )
         return set_backend("cupy", device_id)
     else:

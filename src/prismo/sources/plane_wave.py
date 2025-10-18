@@ -5,13 +5,12 @@ This module implements plane wave sources for exciting uniform electromagnetic
 fields propagating in a specified direction.
 """
 
-from typing import Tuple, Dict, Optional, Union, Literal
-import numpy as np
+from typing import Literal, Optional
 
-from prismo.core.grid import YeeGrid
 from prismo.core.fields import ElectromagneticFields, FieldComponent
+from prismo.core.grid import YeeGrid
 from prismo.sources.base import Source
-from prismo.sources.waveform import Waveform, GaussianPulse, ContinuousWave
+from prismo.sources.waveform import ContinuousWave, GaussianPulse
 
 
 class PlaneWaveSource(Source):
@@ -46,8 +45,8 @@ class PlaneWaveSource(Source):
 
     def __init__(
         self,
-        center: Tuple[float, float, float],
-        size: Tuple[float, float, float],
+        center: tuple[float, float, float],
+        size: tuple[float, float, float],
         direction: str,
         polarization: Literal["x", "y", "z"],
         frequency: float,
@@ -86,8 +85,8 @@ class PlaneWaveSource(Source):
             )
 
         # Will be computed when initialized
-        self._e_components: Dict[str, FieldComponent] = {}
-        self._h_components: Dict[str, FieldComponent] = {}
+        self._e_components: dict[str, FieldComponent] = {}
+        self._h_components: dict[str, FieldComponent] = {}
 
     def _parse_direction(self, direction: str) -> None:
         """

@@ -5,10 +5,10 @@ This module tests the backend interface and compares CPU vs GPU results
 for numerical equivalence.
 """
 
-import pytest
 import numpy as np
+import pytest
 
-from prismo.backends import list_available_backends, get_backend, set_backend
+from prismo.backends import get_backend, list_available_backends, set_backend
 from prismo.backends.numpy_backend import NumPyBackend
 
 

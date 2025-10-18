@@ -9,13 +9,12 @@ This test suite validates:
 - Multi-mode port orthogonality
 """
 
-import pytest
-import numpy as np
-from typing import List
 
-from prismo.modes.solver import ModeSolver, WaveguideMode
+import numpy as np
+import pytest
+
 from prismo.boundaries.mode_port import ModePort, ModePortConfig
-from prismo.sources.mode import ModeSource
+from prismo.modes.solver import ModeSolver, WaveguideMode
 from prismo.monitors.mode_monitor import ModeExpansionMonitor
 from prismo.utils import mode_matching
 
@@ -80,12 +79,12 @@ class TestModeMatching:
         # Create a proper TE mode with transverse E fields
         # For TE mode propagating in z: Hz is dominant, Ex and Ey are transverse
         Hz = np.exp(-(X**2 + Y**2) / w0**2)
-        
+
         # Simple transverse E fields (in reality these come from Maxwell's equations)
         # For power calculation in z-direction, we need Ex and Hy (or Ey and Hx)
         Ex = 0.5 * np.exp(-(X**2 + Y**2) / w0**2)
         Ey = 0.3 * np.exp(-(X**2 + Y**2) / w0**2)
-        
+
         # Corresponding H fields for power calculation
         Hx = -0.3 * np.exp(-(X**2 + Y**2) / w0**2)
         Hy = 0.5 * np.exp(-(X**2 + Y**2) / w0**2)

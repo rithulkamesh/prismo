@@ -5,9 +5,10 @@ This demonstrates the TFSF (Total-Field/Scattered-Field) formulation
 for clean plane wave injection into FDTD simulations.
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
-from prismo import Simulation, TFSFSource, FieldMonitor
+import numpy as np
+
+from prismo import FieldMonitor, Simulation, TFSFSource
 
 
 def main():

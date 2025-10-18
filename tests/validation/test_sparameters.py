@@ -4,7 +4,6 @@ Validation tests for S-parameter extraction.
 Tests S-parameter calculations against known devices.
 """
 
-import pytest
 import numpy as np
 
 from prismo.analysis import SParameterAnalyzer

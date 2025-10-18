@@ -5,12 +5,11 @@ This module implements various dispersion models (Lorentz, Drude, Debye, Sellmei
 for materials with frequency-dependent permittivity and permeability.
 """
 
-from typing import List, Tuple, Optional, Union
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-import numpy as np
+from typing import Union
 
-from prismo.backends import Backend, get_backend
+import numpy as np
 
 
 @dataclass
@@ -171,7 +170,7 @@ class LorentzMaterial(DispersiveMaterial):
         Material name.
     """
 
-    def __init__(self, epsilon_inf: float, poles: List[LorentzPole], name: str = ""):
+    def __init__(self, epsilon_inf: float, poles: list[LorentzPole], name: str = ""):
         super().__init__(epsilon_inf, name)
         self.poles = poles
 
@@ -354,7 +353,7 @@ class SellmeierMaterial(DispersiveMaterial):
         Material name.
     """
 
-    def __init__(self, B_coeffs: List[float], C_coeffs: List[float], name: str = ""):
+    def __init__(self, B_coeffs: list[float], C_coeffs: list[float], name: str = ""):
         super().__init__(epsilon_inf=1.0, name=name)
         self.B = np.array(B_coeffs)
         self.C = np.array(C_coeffs)

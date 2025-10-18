@@ -5,15 +5,16 @@ This module provides a library of commonly used materials for photonic
 simulations, including their dispersion models.
 """
 
-from typing import Dict, Optional
+from typing import Optional
+
 import numpy as np
 
 from .dispersion import (
     DispersiveMaterial,
-    LorentzMaterial,
     DrudeMaterial,
-    SellmeierMaterial,
+    LorentzMaterial,
     LorentzPole,
+    SellmeierMaterial,
 )
 
 
@@ -26,7 +27,7 @@ class MaterialLibrary:
     """
 
     def __init__(self):
-        self._materials: Dict[str, DispersiveMaterial] = {}
+        self._materials: dict[str, DispersiveMaterial] = {}
         self._register_default_materials()
 
     def _register_default_materials(self) -> None:

@@ -5,12 +5,11 @@ This example demonstrates the simulation of a plane wave propagating
 through a vacuum, validating the basic FDTD implementation.
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.animation import FuncAnimation
 
-import prismo
-from prismo import Simulation, PlaneWaveSource, FieldMonitor
+from prismo import FieldMonitor, PlaneWaveSource, Simulation
 
 
 def run_plane_wave_simulation():
@@ -107,7 +106,7 @@ def create_animation(ez_data, wavelength):
         xycoords="axes fraction",
         va="top",
         ha="left",
-        bbox=dict(boxstyle="round", fc="white", ec="gray", alpha=0.8),
+        bbox={"boxstyle": "round", "fc": "white", "ec": "gray", "alpha": 0.8},
     )
 
     # Create animation

@@ -5,7 +5,7 @@ This module provides custom CUDA kernels for high-performance Maxwell
 equation updates on GPU using CuPy's RawKernels.
 """
 
-from typing import Tuple, Optional
+
 import numpy as np
 
 try:
@@ -39,20 +39,20 @@ void update_e_field_3d(
     int i = blockDim.x * blockIdx.x + threadIdx.x;
     int j = blockDim.y * blockIdx.y + threadIdx.y;
     int k = blockDim.z * blockIdx.z + threadIdx.z;
-    
+
     if (i >= nx || j >= ny-1 || k >= nz-1) return;
-    
+
     int idx = i * ny * nz + j * nz + k;
-    
+
     // Ex update: ∂Ex/∂t = (1/ε) * (∂Hz/∂y - ∂Hy/∂z)
     int idx_hz_j1 = i * ny * (nz-1) + (j+1) * (nz-1) + k;
     int idx_hz_j0 = i * ny * (nz-1) + j * (nz-1) + k;
     int idx_hy_k1 = i * (ny-1) * nz + j * nz + (k+1);
     int idx_hy_k0 = i * (ny-1) * nz + j * nz + k;
-    
+
     double curl_hz_y = (Hz[idx_hz_j1] - Hz[idx_hz_j0]) / dy;
     double curl_hy_z = (Hy[idx_hy_k1] - Hy[idx_hy_k0]) / dz;
-    
+
     Ex[idx] = Ca_ex[idx] * Ex[idx] + Cb_ex[idx] * (curl_hz_y - curl_hy_z);
 }
 """
@@ -75,27 +75,27 @@ void update_h_field_3d(
     int i = blockDim.x * blockIdx.x + threadIdx.x;
     int j = blockDim.y * blockIdx.y + threadIdx.y;
     int k = blockDim.z * blockIdx.z + threadIdx.z;
-    
+
     if (i >= nx-1 || j >= ny || k >= nz) return;
-    
+
     int idx = i * ny * nz + j * nz + k;
-    
+
     // Hx update: ∂Hx/∂t = -(1/μ) * (∂Ez/∂y - ∂Ey/∂z)
     double curl_ez_y = 0.0;
     double curl_ey_z = 0.0;
-    
+
     if (j < ny-1) {
         int idx_ez_j1 = i * (ny-1) * nz + (j+1) * nz + k;
         int idx_ez_j0 = i * (ny-1) * nz + j * nz + k;
         curl_ez_y = (Ez[idx_ez_j1] - Ez[idx_ez_j0]) / dy;
     }
-    
+
     if (k < nz-1) {
         int idx_ey_k1 = i * ny * (nz-1) + j * (nz-1) + (k+1);
         int idx_ey_k0 = i * ny * (nz-1) + j * (nz-1) + k;
         curl_ey_z = (Ey[idx_ey_k1] - Ey[idx_ey_k0]) / dz;
     }
-    
+
     Hx[idx] = Da[idx] * Hx[idx] - Db[idx] * (curl_ez_y - curl_ey_z);
 }
 """
@@ -119,13 +119,13 @@ void fused_maxwell_update(
 ) {
     // Fused kernel that updates H then E in a single pass
     // Reduces memory bandwidth requirements
-    
+
     int i = blockDim.x * blockIdx.x + threadIdx.x;
     int j = blockDim.y * blockIdx.y + threadIdx.y;
     int k = blockDim.z * blockIdx.z + threadIdx.z;
-    
+
     if (i >= nx || j >= ny || k >= nz) return;
-    
+
     // First update H fields
     // Then update E fields
     // This allows better cache locality
@@ -228,7 +228,7 @@ class CUDAKernels:
         )
 
 
-def get_optimal_block_size(grid_shape: Tuple[int, int, int]) -> Tuple[int, int, int]:
+def get_optimal_block_size(grid_shape: tuple[int, int, int]) -> tuple[int, int, int]:
     """
     Determine optimal CUDA block size for given grid.
 
@@ -267,7 +267,7 @@ def get_optimal_block_size(grid_shape: Tuple[int, int, int]) -> Tuple[int, int, 
 
 
 def benchmark_cuda_kernels(
-    grid_size: Tuple[int, int, int], num_iterations: int = 100
+    grid_size: tuple[int, int, int], num_iterations: int = 100
 ) -> dict:
     """
     Benchmark CUDA kernels performance.
@@ -295,9 +295,9 @@ def benchmark_cuda_kernels(
     Ex = cp.random.random((nx, ny - 1, nz - 1), dtype=cp.float64)
     Ey = cp.random.random((nx - 1, ny, nz - 1), dtype=cp.float64)
     Ez = cp.random.random((nx - 1, ny - 1, nz), dtype=cp.float64)
-    Hx = cp.random.random((nx - 1, ny, nz), dtype=cp.float64)
-    Hy = cp.random.random((nx, ny - 1, nz), dtype=cp.float64)
-    Hz = cp.random.random((nx, ny, nz - 1), dtype=cp.float64)
+    cp.random.random((nx - 1, ny, nz), dtype=cp.float64)
+    cp.random.random((nx, ny - 1, nz), dtype=cp.float64)
+    cp.random.random((nx, ny, nz - 1), dtype=cp.float64)
 
     Ca = cp.ones((nx, ny, nz), dtype=cp.float64)
     Cb = cp.ones((nx, ny, nz), dtype=cp.float64)

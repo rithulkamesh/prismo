@@ -5,23 +5,21 @@ This module tests various source implementations, including point sources,
 plane wave sources, and Gaussian beam sources.
 """
 
-import pytest
 import numpy as np
+import pytest
 from numpy.testing import assert_allclose
 
-from prismo.core.grid import YeeGrid, GridSpec
 from prismo.core.fields import ElectromagneticFields
-from prismo.sources.waveform import (
-    Waveform,
-    ContinuousWave,
-    GaussianPulse,
-    RickerWavelet,
-    CustomWaveform,
-)
-from prismo.sources.base import Source
-from prismo.sources.point import PointSource, ElectricDipole, MagneticDipole
+from prismo.core.grid import GridSpec, YeeGrid
 from prismo.sources.gaussian import GaussianBeamSource
 from prismo.sources.plane_wave import PlaneWaveSource
+from prismo.sources.point import ElectricDipole, MagneticDipole, PointSource
+from prismo.sources.waveform import (
+    ContinuousWave,
+    CustomWaveform,
+    GaussianPulse,
+    RickerWavelet,
+)
 
 
 class TestWaveforms:
@@ -80,7 +78,6 @@ class TestWaveforms:
 
         # Test at peak time
         t = ricker.delay
-        tau = 0  # At peak
         expected = amplitude
         assert_allclose(ricker(t), expected)
 

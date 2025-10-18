@@ -5,10 +5,11 @@ This module tests the ElectromagneticFields class, including field storage,
 manipulation, energy calculations, and memory management.
 """
 
-import pytest
 import numpy as np
-from prismo.core.grid import YeeGrid, GridSpec
+import pytest
+
 from prismo.core.fields import ElectromagneticFields
+from prismo.core.grid import GridSpec, YeeGrid
 
 
 class TestElectromagneticFieldsCreation:

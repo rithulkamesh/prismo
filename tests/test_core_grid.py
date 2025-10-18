@@ -5,9 +5,10 @@ This module tests the YeeGrid and GridSpec classes, including 2D/3D compatibilit
 boundary conditions, coordinate systems, and edge cases.
 """
 
-import pytest
 import numpy as np
-from prismo.core.grid import YeeGrid, GridSpec
+import pytest
+
+from prismo.core.grid import GridSpec, YeeGrid
 
 
 class TestGridSpec:
@@ -198,7 +199,6 @@ class TestYeeGrid2D:
 
     def test_2d_pml_detection(self, grid_2d):
         """Test PML region detection for 2D grid."""
-        pml = grid_2d.pml_layers
 
         # Points inside PML (k=0 for 2D)
         assert grid_2d.is_inside_pml(0, 10, 0)  # Left boundary

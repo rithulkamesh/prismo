@@ -5,11 +5,11 @@ This module provides functionality to parse Lumerical FDTD Solutions
 project files and convert them to Prismo format.
 """
 
-from typing import List, Dict, Any, Optional
-from pathlib import Path
-from dataclasses import dataclass, field
-import xml.etree.ElementTree as ET
 import json
+import xml.etree.ElementTree as ET
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Optional
 
 
 @dataclass
@@ -21,7 +21,7 @@ class FSPGeometry:
     center: tuple
     size: tuple
     material: str
-    properties: Dict[str, Any] = field(default_factory=dict)
+    properties: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -32,7 +32,7 @@ class FSPSource:
     type: str  # 'mode', 'gaussian', 'plane_wave', etc.
     center: tuple
     size: tuple
-    properties: Dict[str, Any] = field(default_factory=dict)
+    properties: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -43,7 +43,7 @@ class FSPMonitor:
     type: str  # 'time', 'frequency', 'mode_expansion', etc.
     center: tuple
     size: tuple
-    properties: Dict[str, Any] = field(default_factory=dict)
+    properties: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -70,12 +70,12 @@ class FSPProject:
     """
 
     filename: Path
-    geometries: List[FSPGeometry] = field(default_factory=list)
-    sources: List[FSPSource] = field(default_factory=list)
-    monitors: List[FSPMonitor] = field(default_factory=list)
-    simulation_region: Dict[str, Any] = field(default_factory=dict)
-    materials: Dict[str, Any] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    geometries: list[FSPGeometry] = field(default_factory=list)
+    sources: list[FSPSource] = field(default_factory=list)
+    monitors: list[FSPMonitor] = field(default_factory=list)
+    simulation_region: dict[str, Any] = field(default_factory=dict)
+    materials: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class FSPParser:
@@ -127,7 +127,7 @@ class FSPParser:
         try:
             # Attempt to parse as text/XML directly (some FSP files)
             self._parse_xml_structure(project)
-        except Exception as e:
+        except Exception:
             # Try archive extraction
             self._parse_archive(project)
 
@@ -202,7 +202,7 @@ class FSPParser:
                 size=(0, 0, 0),  # Extract from XML
                 material=elem.get("material", ""),
             )
-        except:
+        except Exception:
             return None
 
     def _parse_source_element(self, elem: ET.Element) -> Optional[FSPSource]:
@@ -214,7 +214,7 @@ class FSPParser:
                 center=(0, 0, 0),
                 size=(0, 0, 0),
             )
-        except:
+        except Exception:
             return None
 
     def _parse_monitor_element(self, elem: ET.Element) -> Optional[FSPMonitor]:
@@ -226,7 +226,7 @@ class FSPParser:
                 center=(0, 0, 0),
                 size=(0, 0, 0),
             )
-        except:
+        except Exception:
             return None
 
     def to_prismo_simulation(self):
@@ -244,7 +244,6 @@ class FSPParser:
             raise RuntimeError("Must parse FSP file first")
 
         # Extract simulation region
-        sim_region = self.project.simulation_region
 
         # Create Prismo simulation
         # (Simplified - would need proper parameter mapping)

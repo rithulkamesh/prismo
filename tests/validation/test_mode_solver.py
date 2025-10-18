@@ -5,8 +5,8 @@ Compares mode solver results against analytical solutions for simple
 waveguides.
 """
 
-import pytest
 import numpy as np
+import pytest
 
 from prismo.modes import ModeSolver
 

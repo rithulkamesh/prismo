@@ -5,12 +5,13 @@ These tests validate dispersive material implementations against
 analytical solutions and known results.
 """
 
-import pytest
 import numpy as np
+import pytest
 
-from prismo.materials import LorentzMaterial, DrudeMaterial, LorentzPole
-from prismo.materials.ade import ADESolver
+import prismo
 from prismo.backends import get_backend
+from prismo.materials import DrudeMaterial, LorentzMaterial, LorentzPole
+from prismo.materials.ade import ADESolver
 
 
 class TestLorentzValidation:
@@ -62,7 +63,7 @@ class TestDrudeValidation:
         mat = DrudeMaterial(epsilon_inf=1.0, omega_p=omega_p, gamma=1e13)
 
         # At plasma frequency, Re(ε) should be small or negative
-        eps = mat.permittivity(omega_p)
+        mat.permittivity(omega_p)
 
         # Below plasma frequency, metal behavior (negative real epsilon)
         eps_below = mat.permittivity(omega_p / 2)
@@ -82,7 +83,7 @@ class TestDrudeValidation:
         wavelength = 500e-9
         omega = 2 * np.pi * 299792458.0 / wavelength
 
-        eps = au.permittivity(omega)
+        au.permittivity(omega)
         n = au.refractive_index(omega)
 
         # Gold should have large imaginary part (absorption) in visible
@@ -140,10 +141,10 @@ class TestPerformance:
             arr = backend.sqrt(arr + 1)
             return arr
 
-        result = benchmark(run_operations)
+        benchmark(run_operations)
 
     @pytest.mark.skipif(
-        "cupy" not in list_available_backends(), reason="CuPy not available"
+        "cupy" not in prismo.list_available_backends(), reason="CuPy not available"
     )
     def test_cupy_backend_performance(self, benchmark):
         """Benchmark CuPy backend performance."""
@@ -155,4 +156,4 @@ class TestPerformance:
             backend.synchronize()
             return arr
 
-        result = benchmark(run_operations)
+        benchmark(run_operations)

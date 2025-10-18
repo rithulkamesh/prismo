@@ -5,13 +5,14 @@ This module implements monitors for computing electromagnetic power flow
 (Poynting vector) through specified surfaces in the simulation domain.
 """
 
-from typing import Tuple, List, Optional, Union, Literal
+from typing import Literal, Optional, Union
+
 import numpy as np
 
-from prismo.core.grid import YeeGrid
-from prismo.core.fields import ElectromagneticFields
-from prismo.monitors.base import Monitor
 from prismo.backends import Backend, get_backend
+from prismo.core.fields import ElectromagneticFields
+from prismo.core.grid import YeeGrid
+from prismo.monitors.base import Monitor
 
 
 class FluxMonitor(Monitor):
@@ -39,11 +40,11 @@ class FluxMonitor(Monitor):
 
     def __init__(
         self,
-        center: Tuple[float, float, float],
-        size: Tuple[float, float, float],
+        center: tuple[float, float, float],
+        size: tuple[float, float, float],
         direction: Literal["x", "y", "z"],
         name: Optional[str] = None,
-        frequencies: Optional[List[float]] = None,
+        frequencies: Optional[list[float]] = None,
         backend: Optional[Union[str, Backend]] = None,
     ):
         super().__init__(center, size, name)
@@ -63,8 +64,8 @@ class FluxMonitor(Monitor):
             raise TypeError("backend must be a Backend instance or string name")
 
         # Time-domain power flow storage
-        self._power_flow_history: List[float] = []
-        self._time_history: List[float] = []
+        self._power_flow_history: list[float] = []
+        self._time_history: list[float] = []
 
         # Frequency-domain setup
         self.frequencies = frequencies
@@ -98,7 +99,7 @@ class FluxMonitor(Monitor):
             self._dft_hy = np.zeros((n_freq,) + shape, dtype=np.complex128)
             self._dft_hz = np.zeros((n_freq,) + shape, dtype=np.complex128)
 
-    def _get_surface_shape(self) -> Tuple[int, ...]:
+    def _get_surface_shape(self) -> tuple[int, ...]:
         """Get the shape of the flux surface."""
         # Placeholder - should extract from monitor region
         return (10, 10)
@@ -213,7 +214,7 @@ class FluxMonitor(Monitor):
             self._dft_hy[i] += Hy * phase * dt
             self._dft_hz[i] += Hz * phase * dt
 
-    def get_time_domain_power(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_time_domain_power(self) -> tuple[np.ndarray, np.ndarray]:
         """
         Get time-domain power flow history.
 

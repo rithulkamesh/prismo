@@ -6,16 +6,17 @@ entire FDTD simulation process, including grid creation, material definition,
 source specification, and monitor placement.
 """
 
-from typing import Tuple, Dict, List, Optional, Union, Literal, Set, Any
-import numpy as np
 import time as time_module
+from typing import Optional, Union
 
-from prismo.core.grid import YeeGrid, GridSpec
+import numpy as np
+
 from prismo.core.fields import ElectromagneticFields
-from prismo.core.solver import FDTDSolver, MaxwellUpdater
-from prismo.sources.base import Source
+from prismo.core.grid import GridSpec, YeeGrid
+from prismo.core.solver import FDTDSolver
 from prismo.monitors.base import Monitor
 from prismo.monitors.field import FieldMonitor
+from prismo.sources.base import Source
 
 
 class Simulation:
@@ -44,8 +45,8 @@ class Simulation:
 
     def __init__(
         self,
-        size: Tuple[float, float, float],
-        resolution: Union[float, Tuple[float, float, float]],
+        size: tuple[float, float, float],
+        resolution: Union[float, tuple[float, float, float]],
         boundary_conditions: str = "pml",
         pml_layers: int = 10,
         courant_factor: float = 0.9,
@@ -72,8 +73,8 @@ class Simulation:
         self.solver = FDTDSolver(self.grid, self.dt)
 
         # Storage for sources and monitors
-        self.sources: List[Source] = []
-        self.monitors: List[Monitor] = []
+        self.sources: list[Source] = []
+        self.monitors: list[Monitor] = []
 
         # Simulation state
         self.step_count = 0

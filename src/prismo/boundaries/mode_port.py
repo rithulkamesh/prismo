@@ -5,16 +5,16 @@ This module implements mode ports that can inject and extract waveguide modes
 at simulation boundaries, enabling accurate S-parameter calculations.
 """
 
-from typing import List, Tuple, Optional, Dict, Literal
-import numpy as np
 from dataclasses import dataclass
+from typing import Literal, Optional
 
-from prismo.core.grid import YeeGrid
+import numpy as np
+
 from prismo.core.fields import ElectromagneticFields
+from prismo.core.grid import YeeGrid
 from prismo.modes.solver import WaveguideMode
 from prismo.utils.mode_matching import (
     compute_mode_overlap,
-    normalize_mode_to_power,
     interpolate_mode_to_grid,
 )
 
@@ -38,10 +38,10 @@ class ModePortConfig:
         Whether to inject modes (source) or only extract (monitor).
     """
 
-    center: Tuple[float, float, float]
-    size: Tuple[float, float, float]
+    center: tuple[float, float, float]
+    size: tuple[float, float, float]
     direction: Literal["+x", "-x", "+y", "-y", "+z", "-z"]
-    modes: List[WaveguideMode]
+    modes: list[WaveguideMode]
     inject: bool = False
 
 
@@ -91,16 +91,16 @@ class ModePort:
 
         # Grid information (set during initialization)
         self._grid: Optional[YeeGrid] = None
-        self._port_region: Dict[str, np.ndarray] = {}
+        self._port_region: dict[str, np.ndarray] = {}
 
         # Interpolated mode profiles on simulation grid
-        self._interpolated_modes: List[WaveguideMode] = []
+        self._interpolated_modes: list[WaveguideMode] = []
 
         # Mode coefficients storage
-        self._mode_coefficients: Dict[int, List[complex]] = {
+        self._mode_coefficients: dict[int, list[complex]] = {
             i: [] for i in range(len(config.modes))
         }
-        self._time_points: List[float] = []
+        self._time_points: list[float] = []
 
         # Parse direction
         self.sign = +1 if config.direction[0] == "+" else -1
@@ -263,7 +263,7 @@ class ModePort:
         fields: ElectromagneticFields,
         time: float,
         dt: float,
-        mode_amplitudes: Optional[List[complex]] = None,
+        mode_amplitudes: Optional[list[complex]] = None,
     ) -> None:
         """
         Inject mode fields into the simulation.
@@ -289,11 +289,11 @@ class ModePort:
             mode_amplitudes = [1.0] * len(self._interpolated_modes)
 
         # For each mode, add its field pattern
-        for mode_idx, (mode, amplitude) in enumerate(
+        for _mode_idx, (mode, amplitude) in enumerate(
             zip(self._interpolated_modes, mode_amplitudes)
         ):
             # Get mode phase (propagating wave)
-            beta = 2 * np.pi * mode.neff.real / mode.wavelength
+            2 * np.pi * mode.neff.real / mode.wavelength
             omega = 2 * np.pi * mode.frequency
 
             # Time-dependent amplitude
@@ -374,7 +374,7 @@ class ModePort:
         self,
         fields: ElectromagneticFields,
         time: float,
-    ) -> List[complex]:
+    ) -> list[complex]:
         """
         Extract mode coefficients from simulation fields.
 
@@ -430,7 +430,7 @@ class ModePort:
     def _extract_field_slice(
         self,
         fields: ElectromagneticFields,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         Extract field components at port plane.
 
@@ -552,7 +552,7 @@ class ModePort:
 
         return Ex, Ey, Ez, Hx, Hy, Hz
 
-    def get_mode_coefficient(self, mode_index: int) -> List[complex]:
+    def get_mode_coefficient(self, mode_index: int) -> list[complex]:
         """
         Get time series of mode coefficient.
 
@@ -568,7 +568,7 @@ class ModePort:
         """
         return self._mode_coefficients[mode_index]
 
-    def get_time_points(self) -> List[float]:
+    def get_time_points(self) -> list[float]:
         """
         Get recorded time points.
 

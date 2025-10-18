@@ -2,14 +2,11 @@
 Tests for material models and dispersion.
 """
 
-import pytest
 import numpy as np
 
 from prismo.materials import (
-    LorentzMaterial,
     DrudeMaterial,
-    DebyeMaterial,
-    SellmeierMaterial,
+    LorentzMaterial,
     LorentzPole,
     get_material,
     list_materials,

@@ -6,12 +6,12 @@ data during FDTD simulations, with options for time-domain and frequency-domain
 analysis.
 """
 
-from typing import Tuple, Dict, List, Optional, Union, Literal, Set
-import numpy as np
-from dataclasses import dataclass, field
+from typing import Optional, Union
 
-from prismo.core.grid import YeeGrid
+import numpy as np
+
 from prismo.core.fields import ElectromagneticFields, FieldComponent
+from prismo.core.grid import YeeGrid
 from prismo.monitors.base import Monitor
 
 
@@ -37,12 +37,12 @@ class FieldMonitor(Monitor):
 
     def __init__(
         self,
-        center: Tuple[float, float, float],
-        size: Tuple[float, float, float],
-        components: Union[List[FieldComponent], str] = "all",
+        center: tuple[float, float, float],
+        size: tuple[float, float, float],
+        components: Union[list[FieldComponent], str] = "all",
         name: Optional[str] = None,
         time_domain: bool = True,
-        frequencies: Optional[List[float]] = None,
+        frequencies: Optional[list[float]] = None,
     ):
         super().__init__(center=center, size=size, name=name)
 
@@ -65,9 +65,9 @@ class FieldMonitor(Monitor):
         self.frequencies = frequencies if frequencies is not None else []
 
         # Data storage
-        self._time_data: Dict[str, List[np.ndarray]] = {}
-        self._time_points: List[float] = []
-        self._freq_data: Dict[str, Dict[float, np.ndarray]] = {}
+        self._time_data: dict[str, list[np.ndarray]] = {}
+        self._time_points: list[float] = []
+        self._freq_data: dict[str, dict[float, np.ndarray]] = {}
 
         # Initialize time domain storage if enabled
         if self.time_domain:
@@ -82,7 +82,7 @@ class FieldMonitor(Monitor):
                     self._freq_data[comp][freq] = None
 
         # Will store component shapes for data initialization
-        self._component_shapes: Dict[str, Tuple[int, ...]] = {}
+        self._component_shapes: dict[str, tuple[int, ...]] = {}
 
     def initialize(self, grid: YeeGrid) -> None:
         """
@@ -142,7 +142,7 @@ class FieldMonitor(Monitor):
                     complex_phase = np.exp(-1j * omega * time)
                     self._freq_data[comp][freq] += field_data * complex_phase * dt
 
-    def get_time_data(self, component: FieldComponent) -> Tuple[np.ndarray, np.ndarray]:
+    def get_time_data(self, component: FieldComponent) -> tuple[np.ndarray, np.ndarray]:
         """
         Get time-domain data for a specific field component.
 
@@ -200,7 +200,7 @@ class FieldMonitor(Monitor):
 
     def get_power_flow(
         self, frequency: Optional[float] = None
-    ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+    ) -> Union[np.ndarray, tuple[np.ndarray, np.ndarray]]:
         """
         Calculate Poynting vector (power flow) through the monitor.
 

@@ -5,13 +5,13 @@ This module tests the Maxwell equation updates, time stepping, and numerical
 stability of the core FDTD solver components.
 """
 
-import pytest
 import numpy as np
-from numpy.testing import assert_allclose, assert_array_equal
+import pytest
+from numpy.testing import assert_allclose
 
-from prismo.core.grid import YeeGrid, GridSpec
 from prismo.core.fields import ElectromagneticFields
-from prismo.core.solver import MaxwellUpdater, FDTDSolver
+from prismo.core.grid import GridSpec, YeeGrid
+from prismo.core.solver import FDTDSolver, MaxwellUpdater
 
 
 class TestMaxwellUpdater:
@@ -95,8 +95,8 @@ class TestMaxwellUpdater:
                     x
                 )  # Store initial field values (focusing on Hz which should be updated in TE mode)
         initial_hz_max = np.max(np.abs(fields["Hz"]))
-        initial_ex_max = np.max(np.abs(fields["Ex"]))
-        initial_ey_max = np.max(np.abs(fields["Ey"]))
+        np.max(np.abs(fields["Ex"]))
+        np.max(np.abs(fields["Ey"]))
 
         # Store initial field energy
         initial_energy = fields.get_field_energy()
@@ -106,8 +106,8 @@ class TestMaxwellUpdater:
 
         # Check field values after update
         final_hz_max = np.max(np.abs(fields["Hz"]))
-        final_ex_max = np.max(np.abs(fields["Ex"]))
-        final_ey_max = np.max(np.abs(fields["Ey"]))
+        np.max(np.abs(fields["Ex"]))
+        np.max(np.abs(fields["Ey"]))
 
         # Store final field energy
         final_energy = fields.get_field_energy()
@@ -490,7 +490,7 @@ class TestAnalyticalValidation:
         # Calculate initial energy in different regions
         quarter = nx_ez // 4
         region1_energy_init = np.sum(solver.fields["Ez"][:quarter, :] ** 2)
-        region2_energy_init = np.sum(solver.fields["Ez"][quarter : 2 * quarter, :] ** 2)
+        np.sum(solver.fields["Ez"][quarter : 2 * quarter, :] ** 2)
         region3_energy_init = np.sum(
             solver.fields["Ez"][2 * quarter : 3 * quarter, :] ** 2
         )
@@ -501,7 +501,7 @@ class TestAnalyticalValidation:
 
         # Calculate final energy in different regions
         region1_energy_final = np.sum(solver.fields["Ez"][:quarter, :] ** 2)
-        region2_energy_final = np.sum(
+        np.sum(
             solver.fields["Ez"][quarter : 2 * quarter, :] ** 2
         )
         region3_energy_final = np.sum(
@@ -576,7 +576,7 @@ class TestNumericalStability:
 
         # Run stable simulation
         solver_stable.run_steps(20)
-        stable_energy = solver_stable.fields.get_field_energy()
+        solver_stable.fields.get_field_energy()
 
         # Now test with time step slightly above Courant limit
         # This should be caught during initialization
@@ -643,7 +643,6 @@ class TestNumericalStability:
 
     def test_memory_usage_consistency(self):
         """Test that memory usage is consistent across different grid sizes."""
-        import sys
 
         # Test different grid sizes
         grid_sizes = [(0.5, 0.5, 0.0), (1.0, 1.0, 0.0), (1.5, 1.5, 0.0)]
@@ -652,7 +651,7 @@ class TestNumericalStability:
         for size in grid_sizes:
             spec = GridSpec(size=size, resolution=10.0)
             grid = YeeGrid(spec)
-            solver = FDTDSolver(grid)
+            FDTDSolver(grid)
 
             # Estimate memory usage (rough approximation)
             num_points = np.prod(grid.dimensions)

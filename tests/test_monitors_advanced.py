@@ -2,11 +2,9 @@
 Tests for advanced monitors (DFT, flux, mode expansion).
 """
 
-import pytest
-import numpy as np
 
 from prismo import DFTMonitor, FluxMonitor
-from prismo.core.grid import YeeGrid, GridSpec
+from prismo.core.grid import GridSpec, YeeGrid
 
 
 class TestDFTMonitor:

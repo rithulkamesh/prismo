@@ -5,13 +5,11 @@ This module implements electric and magnetic dipole sources located at a single
 point (or small region) within the simulation domain.
 """
 
-from typing import Tuple, Dict, Optional, Union, Literal
-import numpy as np
+from typing import Literal, Optional
 
-from prismo.core.grid import YeeGrid
 from prismo.core.fields import ElectromagneticFields, FieldComponent
 from prismo.sources.base import Source
-from prismo.sources.waveform import Waveform, GaussianPulse, ContinuousWave
+from prismo.sources.waveform import ContinuousWave, GaussianPulse, Waveform
 
 
 class PointSource(Source):
@@ -34,7 +32,7 @@ class PointSource(Source):
 
     def __init__(
         self,
-        position: Tuple[float, float, float],
+        position: tuple[float, float, float],
         component: FieldComponent,
         waveform: Waveform,
         name: Optional[str] = None,
@@ -103,7 +101,7 @@ class ElectricDipole(PointSource):
 
     def __init__(
         self,
-        position: Tuple[float, float, float],
+        position: tuple[float, float, float],
         polarization: Literal["x", "y", "z"],
         frequency: float,
         pulse: bool = True,
@@ -169,7 +167,7 @@ class MagneticDipole(PointSource):
 
     def __init__(
         self,
-        position: Tuple[float, float, float],
+        position: tuple[float, float, float],
         polarization: Literal["x", "y", "z"],
         frequency: float,
         pulse: bool = True,

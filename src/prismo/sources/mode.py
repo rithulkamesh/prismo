@@ -5,14 +5,15 @@ This module implements sources that inject specific waveguide modes
 calculated from the eigenmode solver.
 """
 
-from typing import Tuple, Optional, Literal
+from typing import Literal, Optional
+
 import numpy as np
 
-from prismo.core.grid import YeeGrid
 from prismo.core.fields import ElectromagneticFields
+from prismo.core.grid import YeeGrid
+from prismo.modes.solver import WaveguideMode
 from prismo.sources.base import Source
 from prismo.sources.waveform import Waveform
-from prismo.modes.solver import WaveguideMode
 
 
 class ModeSource(Source):
@@ -44,8 +45,8 @@ class ModeSource(Source):
 
     def __init__(
         self,
-        center: Tuple[float, float, float],
-        size: Tuple[float, float, float],
+        center: tuple[float, float, float],
+        size: tuple[float, float, float],
         mode: WaveguideMode,
         direction: Literal["+x", "-x", "+y", "-y", "+z", "-z"],
         waveform: Waveform,
@@ -219,7 +220,7 @@ class ModeSource(Source):
 
         # Calculate phase for propagating mode
         # Include propagation: exp(i * beta * z - i * omega * t)
-        beta = self.mode.neff.real * 2 * np.pi / self.mode.wavelength
+        self.mode.neff.real * 2 * np.pi / self.mode.wavelength
         omega = 2 * np.pi * self.mode.frequency
 
         # Time-harmonic variation

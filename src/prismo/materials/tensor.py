@@ -5,9 +5,10 @@ This module implements materials with tensor permittivity and permeability,
 supporting diagonal, symmetric, and full anisotropic tensors.
 """
 
-from typing import Tuple, Optional, Union, Literal
-import numpy as np
 from dataclasses import dataclass
+from typing import Literal, Optional, Union
+
+import numpy as np
 
 from prismo.backends import Backend, get_backend
 
@@ -162,7 +163,7 @@ class TensorMaterial:
         self.is_diagonal = epsilon.is_diagonal() and mu.is_diagonal()
         self.is_symmetric = epsilon.is_symmetric() and mu.is_symmetric()
 
-    def apply_to_e_field(self, E: Tuple[any, any, any]) -> Tuple[any, any, any]:
+    def apply_to_e_field(self, E: tuple[any, any, any]) -> tuple[any, any, any]:
         """
         Apply permittivity tensor to E field: D = ε₀ [ε] · E
 
@@ -204,7 +205,7 @@ class TensorMaterial:
 
         return Dx, Dy, Dz
 
-    def apply_to_h_field(self, H: Tuple[any, any, any]) -> Tuple[any, any, any]:
+    def apply_to_h_field(self, H: tuple[any, any, any]) -> tuple[any, any, any]:
         """
         Apply permeability tensor to H field: B = μ₀ [μ] · H
 
@@ -383,7 +384,7 @@ def create_biaxial_material(
 
 def create_rotated_tensor(
     base_tensor: TensorComponents,
-    rotation_angles: Tuple[float, float, float],
+    rotation_angles: tuple[float, float, float],
     convention: str = "xyz",
 ) -> TensorComponents:
     """
@@ -479,8 +480,8 @@ class AnisotropicUpdater:
         self.inv_mu = tensor_material.get_inverse_mu()
 
     def update_e_from_curl_h(
-        self, E: Tuple[any, any, any], curl_H: Tuple[any, any, any]
-    ) -> Tuple[any, any, any]:
+        self, E: tuple[any, any, any], curl_H: tuple[any, any, any]
+    ) -> tuple[any, any, any]:
         """
         Update E-field with anisotropic permittivity.
 
@@ -535,8 +536,8 @@ class AnisotropicUpdater:
         return Ex_new, Ey_new, Ez_new
 
     def update_h_from_curl_e(
-        self, H: Tuple[any, any, any], curl_E: Tuple[any, any, any]
-    ) -> Tuple[any, any, any]:
+        self, H: tuple[any, any, any], curl_E: tuple[any, any, any]
+    ) -> tuple[any, any, any]:
         """
         Update H-field with anisotropic permeability.
 

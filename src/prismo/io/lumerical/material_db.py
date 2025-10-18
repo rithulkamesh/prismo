@@ -5,16 +5,17 @@ This module provides functionality to import material definitions from
 Lumerical's material database files.
 """
 
-from typing import Dict, List, Any, Optional
-from pathlib import Path
-import numpy as np
 import json
 import xml.etree.ElementTree as ET
+from pathlib import Path
+from typing import Any, Optional
+
+import numpy as np
 
 from prismo.materials.dispersion import (
     DispersiveMaterial,
-    LorentzMaterial,
     DrudeMaterial,
+    LorentzMaterial,
     LorentzPole,
 )
 
@@ -36,7 +37,7 @@ class LumericalMaterialDB:
 
     def __init__(self, db_path: Path):
         self.db_path = Path(db_path)
-        self.materials: Dict[str, Any] = {}
+        self.materials: dict[str, Any] = {}
 
     def load_material(self, material_name: str) -> Optional[DispersiveMaterial]:
         """
@@ -151,7 +152,7 @@ class LumericalMaterialDB:
             return LorentzMaterial(
                 epsilon_inf=epsilon_inf, poles=poles, name=root.get("name", "imported")
             )
-        except:
+        except Exception:
             return None
 
     def _parse_drude_xml(self, root: ET.Element) -> Optional[DrudeMaterial]:
@@ -167,13 +168,13 @@ class LumericalMaterialDB:
                 gamma=gamma,
                 name=root.get("name", "imported"),
             )
-        except:
+        except Exception:
             return None
 
     def _parse_json_material(self, file_path: Path) -> Optional[DispersiveMaterial]:
         """Parse JSON material definition."""
         try:
-            with open(file_path, "r") as f:
+            with open(file_path) as f:
                 data = json.load(f)
 
             model_type = data.get("type", "")

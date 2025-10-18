@@ -5,10 +5,10 @@ This module contains the fundamental classes and algorithms for the
 Finite-Difference Time-Domain electromagnetic solver.
 """
 
-from .grid import YeeGrid, GridSpec
 from .fields import ElectromagneticFields
-from .solver import MaxwellUpdater, FDTDSolver
+from .grid import GridSpec, YeeGrid
 from .simulation import Simulation
+from .solver import FDTDSolver, MaxwellUpdater
 
 # Core components will be implemented here:
 # - Grid: Yee grid implementation ✓

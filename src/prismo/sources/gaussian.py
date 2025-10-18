@@ -5,13 +5,14 @@ This module implements Gaussian beam sources for exciting focused electromagneti
 fields within the simulation domain.
 """
 
-from typing import Tuple, Dict, Optional, Union, Literal
+from typing import Literal, Optional
+
 import numpy as np
 
-from prismo.core.grid import YeeGrid
 from prismo.core.fields import ElectromagneticFields, FieldComponent
+from prismo.core.grid import YeeGrid
 from prismo.sources.base import Source
-from prismo.sources.waveform import Waveform, GaussianPulse, ContinuousWave
+from prismo.sources.waveform import ContinuousWave, GaussianPulse
 
 
 class GaussianBeamSource(Source):
@@ -48,8 +49,8 @@ class GaussianBeamSource(Source):
 
     def __init__(
         self,
-        center: Tuple[float, float, float],
-        size: Tuple[float, float, float],
+        center: tuple[float, float, float],
+        size: tuple[float, float, float],
         direction: Literal["x", "y", "z"],
         polarization: Literal["x", "y", "z"],
         frequency: float,
@@ -92,8 +93,8 @@ class GaussianBeamSource(Source):
             )
 
         # Will be computed when initialized
-        self._e_components: Dict[str, FieldComponent] = {}
-        self._h_components: Dict[str, FieldComponent] = {}
+        self._e_components: dict[str, FieldComponent] = {}
+        self._h_components: dict[str, FieldComponent] = {}
 
     def _validate_direction_polarization(
         self, direction: str, polarization: str
@@ -163,7 +164,7 @@ class GaussianBeamSource(Source):
         self._e_components = direction_map[key]["E"]
         self._h_components = direction_map[key]["H"]
 
-    def _calculate_beam_profile(self, time: float) -> Dict[str, np.ndarray]:
+    def _calculate_beam_profile(self, time: float) -> dict[str, np.ndarray]:
         """
         Calculate the Gaussian beam profile at the current time.
 

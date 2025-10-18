@@ -5,12 +5,13 @@ This module defines the base Monitor class and related utilities for
 monitoring and recording field data during FDTD simulations.
 """
 
-from typing import Tuple, Dict, List, Optional, Union, Literal, Set
-import numpy as np
 from abc import ABC, abstractmethod
+from typing import Optional
 
+import numpy as np
+
+from prismo.core.fields import ElectromagneticFields
 from prismo.core.grid import YeeGrid
-from prismo.core.fields import ElectromagneticFields, FieldComponent
 
 
 class Monitor(ABC):
@@ -30,8 +31,8 @@ class Monitor(ABC):
 
     def __init__(
         self,
-        center: Tuple[float, float, float],
-        size: Tuple[float, float, float],
+        center: tuple[float, float, float],
+        size: tuple[float, float, float],
         name: Optional[str] = None,
     ):
         self.center = center
@@ -40,7 +41,7 @@ class Monitor(ABC):
 
         # Set during initialization by the simulation
         self._grid: Optional[YeeGrid] = None
-        self._monitor_region: Dict[str, np.ndarray] = {}
+        self._monitor_region: dict[str, np.ndarray] = {}
 
     def initialize(self, grid: YeeGrid) -> None:
         """
@@ -88,7 +89,7 @@ class Monitor(ABC):
             ),
         }
 
-    def _compute_monitor_region(self) -> Tuple[int, int, int, int, int, int]:
+    def _compute_monitor_region(self) -> tuple[int, int, int, int, int, int]:
         """
         Compute the grid index bounds for the monitor region.
 

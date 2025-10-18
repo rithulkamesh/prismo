@@ -4,10 +4,11 @@ CSV data exporter.
 This module provides functionality to export simulation results to CSV format.
 """
 
-from typing import Dict, Any, Optional
-from pathlib import Path
-import numpy as np
 import csv
+from pathlib import Path
+from typing import Any, Optional
+
+import numpy as np
 
 from .base import Exporter
 
@@ -24,9 +25,9 @@ class CSVExporter(Exporter):
     def export_fields(
         self,
         filename: str,
-        fields: Dict[str, Any],
-        coordinates: Dict[str, Any],
-        metadata: Optional[Dict[str, Any]] = None,
+        fields: dict[str, Any],
+        coordinates: dict[str, Any],
+        metadata: Optional[dict[str, Any]] = None,
     ) -> Path:
         """
         Export field data to CSV.
@@ -131,7 +132,7 @@ class CSVExporter(Exporter):
         filename: str,
         frequencies: Any,
         spectrum: Any,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> Path:
         """
         Export spectrum data to CSV.
@@ -183,8 +184,8 @@ class CSVExporter(Exporter):
         self,
         filename: str,
         frequencies: Any,
-        sparameters: Dict[str, Any],
-        metadata: Optional[Dict[str, Any]] = None,
+        sparameters: dict[str, Any],
+        metadata: Optional[dict[str, Any]] = None,
     ) -> Path:
         """
         Export S-parameters to CSV.
@@ -244,7 +245,7 @@ class CSVExporter(Exporter):
         filename: str,
         field_slice: np.ndarray,
         extent: tuple,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> Path:
         """
         Export a 2D field slice to CSV.

@@ -5,12 +5,13 @@ This module provides tools for running parameter sweeps, exploring design
 spaces, and aggregating results from multiple simulations.
 """
 
-from typing import List, Dict, Any, Callable, Optional, Tuple
-from dataclasses import dataclass
-import numpy as np
-from pathlib import Path
 import json
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Callable, Optional
+
+import numpy as np
 from tqdm import tqdm
 
 
@@ -60,8 +61,8 @@ class ParameterSweep:
 
     def __init__(
         self,
-        parameters: List[SweepParameter],
-        simulation_func: Callable[[Dict[str, Any]], Dict[str, Any]],
+        parameters: list[SweepParameter],
+        simulation_func: Callable[[dict[str, Any]], dict[str, Any]],
         output_dir: Optional[Path] = None,
         parallel: bool = False,
         num_workers: Optional[int] = None,
@@ -75,8 +76,8 @@ class ParameterSweep:
         self.num_workers = num_workers
 
         # Results storage
-        self.results: List[Dict[str, Any]] = []
-        self.parameter_combinations: List[Dict[str, Any]] = []
+        self.results: list[dict[str, Any]] = []
+        self.parameter_combinations: list[dict[str, Any]] = []
 
         # Generate parameter combinations
         self._generate_combinations()
@@ -100,7 +101,7 @@ class ParameterSweep:
 
             self.parameter_combinations.append(combo)
 
-    def run(self, show_progress: bool = True) -> List[Dict[str, Any]]:
+    def run(self, show_progress: bool = True) -> list[dict[str, Any]]:
         """
         Execute parameter sweep.
 
@@ -114,7 +115,7 @@ class ParameterSweep:
         List[dict]
             Results for each parameter combination.
         """
-        n_total = len(self.parameter_combinations)
+        len(self.parameter_combinations)
 
         if self.parallel:
             # Parallel execution
@@ -126,7 +127,7 @@ class ParameterSweep:
         self.results = results
         return results
 
-    def _run_sequential(self, show_progress: bool) -> List[Dict[str, Any]]:
+    def _run_sequential(self, show_progress: bool) -> list[dict[str, Any]]:
         """Run simulations sequentially."""
         results = []
 
@@ -140,7 +141,7 @@ class ParameterSweep:
 
         return results
 
-    def _run_parallel(self, show_progress: bool) -> List[Dict[str, Any]]:
+    def _run_parallel(self, show_progress: bool) -> list[dict[str, Any]]:
         """Run simulations in parallel."""
         with ProcessPoolExecutor(max_workers=self.num_workers) as executor:
             futures = [
@@ -165,7 +166,7 @@ class ParameterSweep:
 
         return results
 
-    def _run_single_simulation(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _run_single_simulation(self, params: dict[str, Any]) -> dict[str, Any]:
         """
         Run a single simulation with given parameters.
 
@@ -249,7 +250,7 @@ class ParameterSweep:
 
     def find_optimal(
         self, metric: str, maximize: bool = True
-    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
         """
         Find parameter combination with optimal metric.
 
@@ -278,7 +279,7 @@ class ParameterSweep:
         return optimal_params, optimal_result
 
     def plot_sweep_1d(
-        self, x_param: str, y_metrics: List[str], save_path: Optional[Path] = None
+        self, x_param: str, y_metrics: list[str], save_path: Optional[Path] = None
     ) -> None:
         """
         Plot 1D parameter sweep results.

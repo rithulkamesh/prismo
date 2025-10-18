@@ -5,13 +5,12 @@ This module tests various monitor implementations, including field monitors
 for time-domain and frequency-domain analysis.
 """
 
-import pytest
 import numpy as np
+import pytest
 from numpy.testing import assert_allclose
 
-from prismo.core.grid import YeeGrid, GridSpec
 from prismo.core.fields import ElectromagneticFields
-from prismo.monitors.base import Monitor
+from prismo.core.grid import GridSpec, YeeGrid
 from prismo.monitors.field import FieldMonitor
 
 

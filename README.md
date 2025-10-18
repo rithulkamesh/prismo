@@ -1,7 +1,7 @@
 # Prismo
 
 [![PyPI version](https://badge.fury.io/py/pyprismo.svg)](https://pypi.org/project/pyprismo/)
-[![CI](https://github.com/rithulkamesh/prismo/actions/workflows/tests.yml/badge.svg)](https://github.com/rithulkamesh/prismo/actions/workflows/tests.yml)
+[![CI](https://github.com/rithulkamesh/prismo/actions/workflows/ci.yml/badge.svg)](https://github.com/rithulkamesh/prismo/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/rithulkamesh/prismo/branch/main/graph/badge.svg)](https://codecov.io/gh/rithulkamesh/prismo)
 [![Documentation Status](https://readthedocs.org/projects/prismo/badge/?version=latest)](https://prismo.readthedocs.io/en/latest/?badge=latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)

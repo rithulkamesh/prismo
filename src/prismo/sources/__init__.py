@@ -10,17 +10,17 @@ This module provides various electromagnetic sources:
 """
 
 from .base import Source
-from .waveform import (
-    Waveform,
-    ContinuousWave,
-    GaussianPulse,
-    RickerWavelet,
-    CustomWaveform,
-)
-from .point import PointSource, ElectricDipole, MagneticDipole
 from .gaussian import GaussianBeamSource
 from .plane_wave import PlaneWaveSource
+from .point import ElectricDipole, MagneticDipole, PointSource
 from .tfsf import TFSFSource
+from .waveform import (
+    ContinuousWave,
+    CustomWaveform,
+    GaussianPulse,
+    RickerWavelet,
+    Waveform,
+)
 
 # Source implementations:
 # - PointSource: Point dipole sources ✓

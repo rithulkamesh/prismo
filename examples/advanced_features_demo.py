@@ -12,9 +12,11 @@ This example demonstrates the new features:
 - Mode solver integration
 """
 
-import numpy as np
-import prismo
 from pathlib import Path
+
+import numpy as np
+
+import prismo
 
 # Print available backends
 print("=" * 60)
@@ -205,12 +207,12 @@ s_param_analyzer.s_matrix[:, 1, 0] = s21_demo
 il = s_param_analyzer.get_insertion_loss_db(1, 0)
 rl = s_param_analyzer.get_return_loss_db(0)
 
-print(f"\nInsertion Loss (S21):")
+print("\nInsertion Loss (S21):")
 print(f"  Min: {np.min(il):.2f} dB")
 print(f"  Max: {np.max(il):.2f} dB")
 print(f"  Mean: {np.mean(il):.2f} dB")
 
-print(f"\nReturn Loss (S11):")
+print("\nReturn Loss (S11):")
 print(f"  Min: {np.min(rl):.2f} dB")
 print(f"  Max: {np.max(rl):.2f} dB")
 print(f"  Mean: {np.mean(rl):.2f} dB")

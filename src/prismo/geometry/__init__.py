@@ -6,14 +6,14 @@ distributions in the simulation domain.
 """
 
 from .shapes import (
-    Shape,
-    Material,
     Box,
-    Sphere,
-    Cylinder,
-    Polygon,
     CustomShape,
+    Cylinder,
     GeometryGroup,
+    Material,
+    Polygon,
+    Shape,
+    Sphere,
 )
 
 __all__ = [

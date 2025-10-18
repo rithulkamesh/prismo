@@ -5,8 +5,9 @@ This module implements a 2D eigenmode solver for computing guided modes
 of waveguide structures using the finite-difference method.
 """
 
-from typing import Tuple, Optional, List
 from dataclasses import dataclass
+from typing import Optional
+
 import numpy as np
 from scipy import sparse
 from scipy.sparse import linalg as spla
@@ -94,14 +95,14 @@ class ModeSolver:
         self.nx = len(x)
         self.ny = len(y)
 
-        self.modes: List[WaveguideMode] = []
+        self.modes: list[WaveguideMode] = []
 
     def solve(
         self,
         num_modes: int = 1,
         mode_type: str = "TE",
         beta_guess: Optional[float] = None,
-    ) -> List[WaveguideMode]:
+    ) -> list[WaveguideMode]:
         """
         Solve for guided modes.
 
@@ -133,7 +134,7 @@ class ModeSolver:
 
     def _solve_te_modes(
         self, num_modes: int, beta_guess: Optional[float]
-    ) -> List[WaveguideMode]:
+    ) -> list[WaveguideMode]:
         """
         Solve for TE modes (Ez = 0, Hz dominant).
 
@@ -171,7 +172,7 @@ class ModeSolver:
                 sigma=sigma**2,
                 which="LM",
             )
-        except:
+        except Exception:
             # Fallback to direct solver
             A_dense = (A + M).toarray()
             eigenvalues, eigenvectors = np.linalg.eig(A_dense)
@@ -225,7 +226,7 @@ class ModeSolver:
 
     def _solve_tm_modes(
         self, num_modes: int, beta_guess: Optional[float]
-    ) -> List[WaveguideMode]:
+    ) -> list[WaveguideMode]:
         """
         Solve for TM modes (Hz = 0, Ez dominant).
 
@@ -237,7 +238,7 @@ class ModeSolver:
 
     def _solve_vector_modes(
         self, num_modes: int, beta_guess: Optional[float]
-    ) -> List[WaveguideMode]:
+    ) -> list[WaveguideMode]:
         """
         Solve for full vectorial modes.
 
@@ -294,7 +295,7 @@ class ModeSolver:
 
     def _calculate_te_transverse_fields(
         self, Hz: np.ndarray, beta: complex
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Calculate Ex, Ey from Hz for TE modes.
 

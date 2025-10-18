@@ -5,9 +5,9 @@ This module provides utilities for mode overlap integrals, normalization,
 forward/backward mode separation, and phase calibration.
 """
 
-from typing import Tuple, Optional, List
-import numpy as np
 from dataclasses import dataclass
+
+import numpy as np
 
 from prismo.modes.solver import WaveguideMode
 
@@ -231,7 +231,7 @@ def separate_forward_backward(
     neff: complex,
     distance: float,
     wavelength: float,
-) -> Tuple[complex, complex]:
+) -> tuple[complex, complex]:
     """
     Separate forward and backward propagating amplitudes using dual monitors.
 
@@ -320,7 +320,7 @@ def check_mode_orthogonality(
         Orthogonality metric (0 = perfectly orthogonal).
     """
     Ex1, Ey1, Ez1 = mode1.Ex, mode1.Ey, mode1.Ez
-    Hx1, Hy1, Hz1 = mode1.Hx, mode1.Hy, mode1.Hz
+    _Hx1, _Hy1, _Hz1 = mode1.Hx, mode1.Hy, mode1.Hz
 
     Ex2, Ey2, Ez2 = mode2.Ex, mode2.Ey, mode2.Ez
     Hx2, Hy2, Hz2 = mode2.Hx, mode2.Hy, mode2.Hz
@@ -439,7 +439,7 @@ def interpolate_mode_to_grid(
     return interpolated_mode
 
 
-def _resize_to_shape(array: np.ndarray, target_shape: Tuple[int, ...]) -> np.ndarray:
+def _resize_to_shape(array: np.ndarray, target_shape: tuple[int, ...]) -> np.ndarray:
     """
     Resize array to target shape using simple interpolation.
 

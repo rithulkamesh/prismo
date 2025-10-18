@@ -14,9 +14,11 @@ This example demonstrates the complete Prismo workflow:
 This represents a complete photonic device simulation workflow.
 """
 
-import numpy as np
-import prismo
 from pathlib import Path
+
+import numpy as np
+
+import prismo
 
 print("=" * 80)
 print(" PRISMO FDTD ENGINE - COMPLETE WORKFLOW EXAMPLE")
@@ -48,7 +50,7 @@ sio2 = prismo.get_material("SiO2")
 
 print(f"✅ Loaded {len(prismo.list_materials())} materials")
 print(f"   Silicon: ε_∞ = {si.epsilon_inf}")
-print(f"   Silica: using Sellmeier model")
+print("   Silica: using Sellmeier model")
 
 # Calculate refractive indices at 1550nm
 wavelength = 1.55e-6
@@ -104,7 +106,7 @@ sim = prismo.Simulation(
     courant_factor=0.9,
 )
 
-print(f"✅ Simulation created")
+print("✅ Simulation created")
 print(f"   Grid: {sim.grid.dimensions}")
 print(f"   Spacing: {sim.grid.spacing[0]*1e9:.1f} nm")
 print(f"   Time step: {sim.dt:.3e} s")
@@ -148,7 +150,7 @@ dft_reflection = prismo.DFTMonitor(
     backend=backend,
 )
 
-print(f"✅ Created 3 monitors")
+print("✅ Created 3 monitors")
 print(f"   Frequency points: {len(frequencies)}")
 print(f"   Wavelength range: {wavelengths[0]*1e9:.0f}-{wavelengths[-1]*1e9:.0f} nm")
 
@@ -161,7 +163,7 @@ s_analyzer = prismo.SParameterAnalyzer(
     num_ports=2, frequencies=frequencies, reference_impedance=50.0
 )
 
-print(f"✅ S-parameter analyzer ready (2 ports)")
+print("✅ S-parameter analyzer ready (2 ports)")
 
 # =============================================================================
 # 7. SIMULATION (Demo with synthetic data)
@@ -197,12 +199,12 @@ insertion_loss = s_analyzer.get_insertion_loss_db(1, 0)
 return_loss = s_analyzer.get_return_loss_db(0)
 reciprocity_error = s_analyzer.check_reciprocity()
 
-print(f"✅ Analysis complete")
-print(f"   Insertion Loss (S21):")
+print("✅ Analysis complete")
+print("   Insertion Loss (S21):")
 print(f"     Mean: {np.mean(insertion_loss):.2f} dB")
 print(f"     Min:  {np.min(insertion_loss):.2f} dB")
 print(f"     Max:  {np.max(insertion_loss):.2f} dB")
-print(f"   Return Loss (S11):")
+print("   Return Loss (S11):")
 print(f"     Mean: {np.mean(return_loss):.2f} dB")
 print(f"   Reciprocity error: {reciprocity_error:.2e}")
 
@@ -288,10 +290,10 @@ print(f"   Mean insertion loss: {np.mean(insertion_loss):.2f} dB")
 print(f"   Reciprocity error: {reciprocity_error:.2e}")
 
 print(f"\n💾 Output files (in {output_dir.absolute()}):")
-print(f"   - waveguide_sparameters.csv")
-print(f"   - waveguide_sparameters.parquet (if polars installed)")
-print(f"   - waveguide.s2p (Touchstone)")
-print(f"   - transmission_spectrum.csv")
+print("   - waveguide_sparameters.csv")
+print("   - waveguide_sparameters.parquet (if polars installed)")
+print("   - waveguide.s2p (Touchstone)")
+print("   - transmission_spectrum.csv")
 
 print("\n🎯 What this demonstrates:")
 print("   ✅ Backend abstraction (GPU/CPU)")
