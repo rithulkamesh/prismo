@@ -3,9 +3,9 @@ requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
-name = "prismo"
+name = "pyprismo"
 description = "A high-performance Python-based FDTD solver for waveguide photonics"
-authors = [{ name = "Rithul Kamesh", email = "rithul@example.com" }]
+authors = [{ name = "Rithul Kamesh", email = "hello@rithul.dev" }]
 readme = "README.md"
 license = { file = "LICENSE" }
 keywords = ["fdtd", "photonics", "waveguide", "electromagnetic", "simulation"]
@@ -178,20 +178,14 @@ ignore_missing_imports = true
 # Pytest configuration
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = [
-    "--strict-markers",
-    "--strict-config",
-    "--cov=prismo",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-    "--cov-report=xml",
-]
+addopts = ["--strict-markers", "--strict-config"]
 testpaths = ["tests"]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "gpu: marks tests that require GPU acceleration",
     "benchmark: marks performance benchmark tests",
     "integration: marks integration tests",
+    "validation: marks validation tests",
 ]
 
 # Coverage configuration

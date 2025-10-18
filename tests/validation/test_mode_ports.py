@@ -77,18 +77,29 @@ class TestModeMatching:
         X, Y = np.meshgrid(x, y, indexing="ij")
         w0 = 0.8e-6
 
+        # Create a proper TE mode with transverse E fields
+        # For TE mode propagating in z: Hz is dominant, Ex and Ey are transverse
         Hz = np.exp(-(X**2 + Y**2) / w0**2)
+        
+        # Simple transverse E fields (in reality these come from Maxwell's equations)
+        # For power calculation in z-direction, we need Ex and Hy (or Ey and Hx)
+        Ex = 0.5 * np.exp(-(X**2 + Y**2) / w0**2)
+        Ey = 0.3 * np.exp(-(X**2 + Y**2) / w0**2)
+        
+        # Corresponding H fields for power calculation
+        Hx = -0.3 * np.exp(-(X**2 + Y**2) / w0**2)
+        Hy = 0.5 * np.exp(-(X**2 + Y**2) / w0**2)
 
         mode = WaveguideMode(
             mode_number=0,
             neff=1.5 + 0j,
             frequency=299792458.0 / wavelength,
             wavelength=wavelength,
-            Ex=np.zeros_like(Hz),
-            Ey=np.zeros_like(Hz),
+            Ex=Ex,
+            Ey=Ey,
             Ez=np.zeros_like(Hz),
-            Hx=np.zeros_like(Hz),
-            Hy=np.zeros_like(Hz),
+            Hx=Hx,
+            Hy=Hy,
             Hz=Hz,
             x=x,
             y=y,

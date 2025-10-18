@@ -8,13 +8,6 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.11"
-  jobs:
-    post_create_environment:
-      # Install poetry
-      - pip install poetry
-    post_install:
-      # Install dependencies
-      - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH poetry install --with docs
 
 # Sphinx configuration
 sphinx:

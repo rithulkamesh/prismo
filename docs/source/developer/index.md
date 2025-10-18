@@ -23,6 +23,7 @@ contributing
 architecture
 testing
 benchmarks
+releasing
 ```
 
 ## Additional Resources

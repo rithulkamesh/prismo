@@ -9,6 +9,7 @@ from typing import Dict, List, Any, Optional
 from pathlib import Path
 import numpy as np
 import json
+import xml.etree.ElementTree as ET
 
 from prismo.materials.dispersion import (
     DispersiveMaterial,

@@ -1,6 +1,7 @@
 # Prismo
 
-[![CI](https://github.com/rithulkamesh/prismo/actions/workflows/ci.yml/badge.svg)](https://github.com/rithulkamesh/prismo/actions/workflows/ci.yml)
+[![PyPI version](https://badge.fury.io/py/pyprismo.svg)](https://pypi.org/project/pyprismo/)
+[![CI](https://github.com/rithulkamesh/prismo/actions/workflows/tests.yml/badge.svg)](https://github.com/rithulkamesh/prismo/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/rithulkamesh/prismo/branch/main/graph/badge.svg)](https://codecov.io/gh/rithulkamesh/prismo)
 [![Documentation Status](https://readthedocs.org/projects/prismo/badge/?version=latest)](https://prismo.readthedocs.io/en/latest/?badge=latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -28,13 +29,13 @@ Prismo implements the Finite-Difference Time-Domain method for solving Maxwell's
 ## Installation
 
 ```bash
-pip install prismo
+pip install pyprismo
 ```
 
 For GPU acceleration:
 
 ```bash
-pip install prismo[acceleration]
+pip install pyprismo[acceleration]
 ```
 
 For development:
@@ -43,6 +44,12 @@ For development:
 git clone https://github.com/rithulkamesh/prismo.git
 cd prismo
 pip install -e ".[all]"
+```
+
+**Note**: The package name on PyPI is `pyprismo`, but you still import it as `prismo`:
+
+```python
+import prismo  # Import name stays as 'prismo'
 ```
 
 ## Quick Start

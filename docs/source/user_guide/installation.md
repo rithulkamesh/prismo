@@ -4,13 +4,41 @@
 
 Prismo requires Python 3.9 or later and the following dependencies:
 
-- **NumPy** (≥1.20): Numerical computing
-- **Matplotlib** (≥3.3): Visualization
+- **NumPy** (≥1.21): Numerical computing
+- **Matplotlib** (≥3.4): Visualization
 - **SciPy** (≥1.7): Scientific computing utilities
+- **h5py** (≥3.0): HDF5 file support
+
+## Installation from PyPI (Recommended)
+
+Install the latest stable release from PyPI:
+
+```bash
+pip install pyprismo
+```
+
+**Note**: The package name on PyPI is `pyprismo`, but you import it as `prismo`:
+
+```python
+import prismo  # Import name is 'prismo'
+```
+
+### With Optional Dependencies
+
+```bash
+# GPU acceleration (requires CUDA)
+pip install pyprismo[acceleration]
+
+# Visualization tools
+pip install pyprismo[visualization]
+
+# Everything
+pip install pyprismo[all]
+```
 
 ## Installation from Source
 
-Currently, Prismo is installed from source. Clone the repository and install in development mode:
+For development or the latest features, install from source:
 
 ```bash
 git clone https://github.com/rithulkamesh/prismo.git
@@ -46,22 +74,26 @@ You should see over 100 tests passing.
 For enhanced functionality, you can install optional dependencies:
 
 ### Development Tools
+
 ```bash
 pip install -e ".[dev]"
 ```
 
 This includes:
+
 - pytest: Testing framework
 - pytest-cov: Code coverage
 - black: Code formatting
 - flake8: Linting
 
 ### Documentation Building
+
 ```bash
 pip install -e ".[docs]"
 ```
 
 This includes:
+
 - Sphinx: Documentation generator
 - MyST-Parser: Markdown support
 - sphinx-rtd-theme: ReadTheDocs theme

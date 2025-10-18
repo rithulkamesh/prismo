@@ -50,7 +50,7 @@ For GPU acceleration, you need:
 
 ```bash
 # Install CUDA-enabled Prismo
-pip install prismo[acceleration]
+pip install pyprismo[acceleration]
 
 # Or manually
 pip install cupy-cuda12x
