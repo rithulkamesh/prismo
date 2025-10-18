@@ -14,7 +14,6 @@ This is a 2D simulation of a straight waveguide section to demonstrate
 mode port functionality with minimal reflection.
 """
 
-
 import matplotlib.pyplot as plt
 import numpy as np
 

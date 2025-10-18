@@ -374,7 +374,9 @@ class MaxwellUpdater:
                 # Ey has shape (nx-1, ny), Hz has shape (nx, ny)
                 # Take derivative and assign to matching Hz points
                 nx_curl = min(Ey.shape[0] - 1, Hz.shape[0] - 1)
-                curl_ey_x[:nx_curl, :] = (Ey[1:nx_curl+1, :] - Ey[:nx_curl, :]) / self.dx
+                curl_ey_x[:nx_curl, :] = (
+                    Ey[1 : nx_curl + 1, :] - Ey[:nx_curl, :]
+                ) / self.dx
 
             curl_ex_y = np.zeros_like(Hz)
             if Ex.shape[1] > 1:
@@ -382,7 +384,9 @@ class MaxwellUpdater:
                 # Ex has shape (nx, ny-1), Hz has shape (nx, ny)
                 # Take derivative and assign to matching Hz points
                 ny_curl = min(Ex.shape[1] - 1, Hz.shape[1] - 1)
-                curl_ex_y[:, :ny_curl] = (Ex[:, 1:ny_curl+1] - Ex[:, :ny_curl]) / self.dy
+                curl_ex_y[:, :ny_curl] = (
+                    Ex[:, 1 : ny_curl + 1] - Ex[:, :ny_curl]
+                ) / self.dy
 
             da_hz = self._interpolate_to_hz_points_2d(self.Da[:, :, 0])
             db_hz = self._interpolate_to_hz_points_2d(self.Db[:, :, 0])

@@ -501,9 +501,7 @@ class TestAnalyticalValidation:
 
         # Calculate final energy in different regions
         region1_energy_final = np.sum(solver.fields["Ez"][:quarter, :] ** 2)
-        np.sum(
-            solver.fields["Ez"][quarter : 2 * quarter, :] ** 2
-        )
+        np.sum(solver.fields["Ez"][quarter : 2 * quarter, :] ** 2)
         region3_energy_final = np.sum(
             solver.fields["Ez"][2 * quarter : 3 * quarter, :] ** 2
         )

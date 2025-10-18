@@ -169,7 +169,8 @@ def get_backend(backend: Optional[str] = None, device_id: int = 0) -> Backend:
         warnings.warn(
             "No backend specified. Auto-selecting CuPy (GPU) backend. "
             "Set explicitly with set_backend() or get_backend(backend='numpy')",
-            UserWarning, stacklevel=2,
+            UserWarning,
+            stacklevel=2,
         )
         return set_backend("cupy", device_id)
     else:

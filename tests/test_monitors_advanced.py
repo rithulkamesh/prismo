@@ -2,7 +2,6 @@
 Tests for advanced monitors (DFT, flux, mode expansion).
 """
 
-
 from prismo import DFTMonitor, FluxMonitor
 from prismo.core.grid import GridSpec, YeeGrid
 

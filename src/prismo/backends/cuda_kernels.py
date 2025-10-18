@@ -5,7 +5,6 @@ This module provides custom CUDA kernels for high-performance Maxwell
 equation updates on GPU using CuPy's RawKernels.
 """
 
-
 import numpy as np
 
 try:

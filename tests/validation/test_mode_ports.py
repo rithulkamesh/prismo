@@ -9,7 +9,6 @@ This test suite validates:
 - Multi-mode port orthogonality
 """
 
-
 import numpy as np
 import pytest
 
