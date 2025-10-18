@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
 # -- Project information -----------------------------------------------------
 project = "Prismo"
-copyright = "2024, Rithul Kamesh"
+copyright = "2025 - Present, Rithul Kamesh"
 author = "Rithul Kamesh"
 
 # The version info for the project you're documenting, acts as replacement for
