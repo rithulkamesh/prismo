@@ -93,23 +93,75 @@ class ModeSource(Source):
         x_mode = self.mode.x
         y_mode = self.mode.y
 
-        # Get simulation grid coordinates in source region
-        # (Simplified - should extract actual source region coordinates)
-        nx, ny, _ = self._grid.dimensions
-        x_sim = np.linspace(x_mode[0], x_mode[-1], min(nx, len(x_mode)))
-        y_sim = np.linspace(y_mode[0], y_mode[-1], min(ny, len(y_mode)))
+        # Determine source region coordinates based on propagation direction
+        if self.axis == "z":
+            # Mode profile in xy-plane
+            # Get actual source region coordinates
+            x_start = self.center[0] - self.size[0] / 2
+            x_end = self.center[0] + self.size[0] / 2
+            y_start = self.center[1] - self.size[1] / 2
+            y_end = self.center[1] + self.size[1] / 2
 
-        # Create interpolators for each field component
+            # Create grid in source region
+            nx_src = max(int(self.size[0] / self._grid.dx), len(x_mode))
+            ny_src = max(int(self.size[1] / self._grid.dy), len(y_mode))
+
+            x_sim = np.linspace(x_start, x_end, nx_src)
+            y_sim = np.linspace(y_start, y_end, ny_src)
+
+        elif self.axis == "x":
+            # Mode profile in yz-plane
+            y_start = self.center[1] - self.size[1] / 2
+            y_end = self.center[1] + self.size[1] / 2
+            z_start = self.center[2] - self.size[2] / 2 if self._grid.is_3d else 0
+            z_end = self.center[2] + self.size[2] / 2 if self._grid.is_3d else 0
+
+            ny_src = max(int(self.size[1] / self._grid.dy), len(x_mode))
+            nz_src = (
+                max(int(self.size[2] / self._grid.dz), len(y_mode))
+                if self._grid.is_3d
+                else len(y_mode)
+            )
+
+            x_sim = np.linspace(y_start, y_end, ny_src)
+            y_sim = np.linspace(z_start, z_end, nz_src)
+
+        else:  # y axis
+            # Mode profile in xz-plane
+            x_start = self.center[0] - self.size[0] / 2
+            x_end = self.center[0] + self.size[0] / 2
+            z_start = self.center[2] - self.size[2] / 2 if self._grid.is_3d else 0
+            z_end = self.center[2] + self.size[2] / 2 if self._grid.is_3d else 0
+
+            nx_src = max(int(self.size[0] / self._grid.dx), len(x_mode))
+            nz_src = (
+                max(int(self.size[2] / self._grid.dz), len(y_mode))
+                if self._grid.is_3d
+                else len(y_mode)
+            )
+
+            x_sim = np.linspace(x_start, x_end, nx_src)
+            y_sim = np.linspace(z_start, z_end, nz_src)
+
+        # Create interpolators for each field component (handles complex fields)
         def make_interpolator(field_data):
             # Handle 2D data
             if field_data.ndim == 2:
-                return RegularGridInterpolator(
+                # Interpolate real and imaginary parts separately
+                interp_real = RegularGridInterpolator(
                     (x_mode, y_mode),
-                    field_data.real,  # Interpolate real part
+                    field_data.real,
                     bounds_error=False,
                     fill_value=0.0,
                 )
-            return None
+                interp_imag = RegularGridInterpolator(
+                    (x_mode, y_mode),
+                    field_data.imag,
+                    bounds_error=False,
+                    fill_value=0.0,
+                )
+                return interp_real, interp_imag
+            return None, None
 
         interp_Ex = make_interpolator(self.mode.Ex)
         interp_Ey = make_interpolator(self.mode.Ey)
@@ -123,18 +175,24 @@ class ModeSource(Source):
         points = np.column_stack([X_sim.ravel(), Y_sim.ravel()])
 
         # Interpolate all components
-        if interp_Ex is not None:
-            self._mode_profile_Ex = interp_Ex(points).reshape(X_sim.shape)
-        if interp_Ey is not None:
-            self._mode_profile_Ey = interp_Ey(points).reshape(X_sim.shape)
-        if interp_Ez is not None:
-            self._mode_profile_Ez = interp_Ez(points).reshape(X_sim.shape)
-        if interp_Hx is not None:
-            self._mode_profile_Hx = interp_Hx(points).reshape(X_sim.shape)
-        if interp_Hy is not None:
-            self._mode_profile_Hy = interp_Hy(points).reshape(X_sim.shape)
-        if interp_Hz is not None:
-            self._mode_profile_Hz = interp_Hz(points).reshape(X_sim.shape)
+        def interpolate_field(interp_tuple):
+            if interp_tuple[0] is not None:
+                real_part = interp_tuple[0](points).reshape(X_sim.shape)
+                imag_part = interp_tuple[1](points).reshape(X_sim.shape)
+                return real_part + 1j * imag_part
+            return None
+
+        self._mode_profile_Ex = interpolate_field(interp_Ex)
+        self._mode_profile_Ey = interpolate_field(interp_Ey)
+        self._mode_profile_Ez = interpolate_field(interp_Ez)
+        self._mode_profile_Hx = interpolate_field(interp_Hx)
+        self._mode_profile_Hy = interpolate_field(interp_Hy)
+        self._mode_profile_Hz = interpolate_field(interp_Hz)
+
+        # Store interpolated grid info
+        self._interp_shape = X_sim.shape
+        self._interp_x = x_sim
+        self._interp_y = y_sim
 
     def update_fields(
         self, fields: ElectromagneticFields, time: float, dt: float
@@ -162,32 +220,144 @@ class ModeSource(Source):
         # Calculate phase for propagating mode
         # Include propagation: exp(i * beta * z - i * omega * t)
         beta = self.mode.neff.real * 2 * np.pi / self.mode.wavelength
+        omega = 2 * np.pi * self.mode.frequency
 
-        # Spatial phase (will be position-dependent in full implementation)
-        spatial_phase = 0.0  # Simplified
+        # Time-harmonic variation
+        time_phase = -omega * time + self.phase
 
-        # Total field amplitude
-        amplitude = (
-            self.amplitude * waveform_value * np.exp(1j * (self.phase + spatial_phase))
-        )
+        # Total complex amplitude
+        amplitude_complex = self.amplitude * waveform_value * np.exp(1j * time_phase)
 
-        # Extract real part for time-domain
-        amplitude_real = amplitude.real
+        # Extract real part for time-domain injection
+        amplitude_real = amplitude_complex.real
 
-        # Add mode profile to fields in source region
-        # (Simplified - should use proper source region indices)
+        # Get source region indices
+        x_min, x_max, y_min, y_max, z_min, z_max = self._compute_source_region()
 
+        # Add mode fields to simulation based on propagation direction
+        if self.axis == "z":
+            # Mode propagating in z, inject in xy-plane
+            self._inject_z_mode(
+                fields, amplitude_real, x_min, x_max, y_min, y_max, z_min
+            )
+        elif self.axis == "x":
+            # Mode propagating in x, inject in yz-plane
+            self._inject_x_mode(
+                fields, amplitude_real, x_min, y_min, y_max, z_min, z_max
+            )
+        else:  # y
+            # Mode propagating in y, inject in xz-plane
+            self._inject_y_mode(
+                fields, amplitude_real, x_min, x_max, y_min, z_min, z_max
+            )
+
+    def _inject_z_mode(
+        self,
+        fields: ElectromagneticFields,
+        amplitude: float,
+        x_min: int,
+        x_max: int,
+        y_min: int,
+        y_max: int,
+        z_idx: int,
+    ) -> None:
+        """Inject mode propagating in +z or -z direction."""
         if self._mode_profile_Ex is not None:
-            # Get field component in source region
-            # For now, simplified update
-            # Full implementation would use _source_region indices
-            pass
+            # Add tangential E-fields and normal H-field
+            Ex_contribution = amplitude * self._mode_profile_Ex.real
+            Ey_contribution = amplitude * self._mode_profile_Ey.real
+            Hz_contribution = amplitude * self._mode_profile_Hz.real * self.sign
 
-        # Note: Full implementation would:
-        # 1. Extract field slices in source region
-        # 2. Add mode profile * amplitude to those slices
-        # 3. Handle different propagation directions
-        # 4. Apply proper boundary injection (e.g., Total Field/Scattered Field)
+            # Resize to match field region if needed
+            nx_field = x_max - x_min
+            ny_field = y_max - y_min
+
+            if Ex_contribution.shape != (nx_field, ny_field):
+                from scipy.ndimage import zoom
+
+                zoom_x = nx_field / Ex_contribution.shape[0]
+                zoom_y = ny_field / Ex_contribution.shape[1]
+                Ex_contribution = zoom(Ex_contribution, (zoom_x, zoom_y), order=1)
+                Ey_contribution = zoom(Ey_contribution, (zoom_x, zoom_y), order=1)
+                Hz_contribution = zoom(Hz_contribution, (zoom_x, zoom_y), order=1)
+
+            # Add to fields
+            if hasattr(fields, "Ex"):
+                fields.Ex[x_min:x_max, y_min:y_max, z_idx] += Ex_contribution
+            if hasattr(fields, "Ey"):
+                fields.Ey[x_min:x_max, y_min:y_max, z_idx] += Ey_contribution
+            if hasattr(fields, "Hz"):
+                fields.Hz[x_min:x_max, y_min:y_max, z_idx] += Hz_contribution
+
+    def _inject_x_mode(
+        self,
+        fields: ElectromagneticFields,
+        amplitude: float,
+        x_idx: int,
+        y_min: int,
+        y_max: int,
+        z_min: int,
+        z_max: int,
+    ) -> None:
+        """Inject mode propagating in +x or -x direction."""
+        if self._mode_profile_Ey is not None:
+            Ey_contribution = amplitude * self._mode_profile_Ey.real
+            Ez_contribution = amplitude * self._mode_profile_Ez.real
+            Hx_contribution = amplitude * self._mode_profile_Hx.real * self.sign
+
+            ny_field = y_max - y_min
+            nz_field = z_max - z_min
+
+            if Ey_contribution.shape != (ny_field, nz_field):
+                from scipy.ndimage import zoom
+
+                zoom_y = ny_field / Ey_contribution.shape[0]
+                zoom_z = nz_field / Ey_contribution.shape[1]
+                Ey_contribution = zoom(Ey_contribution, (zoom_y, zoom_z), order=1)
+                Ez_contribution = zoom(Ez_contribution, (zoom_y, zoom_z), order=1)
+                Hx_contribution = zoom(Hx_contribution, (zoom_y, zoom_z), order=1)
+
+            if hasattr(fields, "Ey"):
+                fields.Ey[x_idx, y_min:y_max, z_min:z_max] += Ey_contribution
+            if hasattr(fields, "Ez"):
+                fields.Ez[x_idx, y_min:y_max, z_min:z_max] += Ez_contribution
+            if hasattr(fields, "Hx"):
+                fields.Hx[x_idx, y_min:y_max, z_min:z_max] += Hx_contribution
+
+    def _inject_y_mode(
+        self,
+        fields: ElectromagneticFields,
+        amplitude: float,
+        x_min: int,
+        x_max: int,
+        y_idx: int,
+        z_min: int,
+        z_max: int,
+    ) -> None:
+        """Inject mode propagating in +y or -y direction."""
+        if self._mode_profile_Ex is not None:
+            Ex_contribution = amplitude * self._mode_profile_Ex.real
+            Ez_contribution = amplitude * self._mode_profile_Ez.real
+            Hy_contribution = amplitude * self._mode_profile_Hy.real * self.sign
+
+            nx_field = x_max - x_min
+            nz_field = z_max - z_min
+
+            if Ex_contribution.shape != (nx_field, nz_field):
+                from scipy.ndimage import zoom
+
+                zoom_x = nx_field / Ex_contribution.shape[0]
+                zoom_z = nz_field / Ex_contribution.shape[1]
+                Ex_contribution = zoom(Ex_contribution, (zoom_x, zoom_z), order=1)
+                Ez_contribution = zoom(Ez_contribution, (zoom_x, zoom_z), order=1)
+                Hy_contribution = zoom(Hy_contribution, (zoom_x, zoom_z), order=1)
+
+            if hasattr(fields, "Ex"):
+                fields.Ex[x_min:x_max, y_idx, z_min:z_max] += Ex_contribution
+            if hasattr(fields, "Ez"):
+                fields.Ez[x_min:x_max, y_idx, z_min:z_max] += Ez_contribution
+            if hasattr(fields, "Hy"):
+                fields.Hy[x_min:x_max, y_idx, z_min:z_max] += Hy_contribution
 
 
 class ModeLauncher:

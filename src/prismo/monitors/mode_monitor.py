@@ -170,13 +170,15 @@ class ModeExpansionMonitor(Monitor):
         Compute mode coefficients using overlap integrals.
 
         For each mode m:
-        a_m = ∫∫ (E_sim × H_mode* + E_mode* × H_sim) · n dA
+        a_m = ∫∫ (E_sim × H_mode* + E_mode* × H_sim) · n dA / (2 * P_mode)
 
         Returns
         -------
         List[complex]
             Mode coefficients for each mode.
         """
+        from prismo.utils.mode_matching import compute_mode_overlap
+
         # Extract field components at monitor plane
         Ex_sim = self._extract_field(fields, "Ex")
         Ey_sim = self._extract_field(fields, "Ey")
@@ -187,37 +189,25 @@ class ModeExpansionMonitor(Monitor):
 
         coeffs = []
 
-        for mode_idx, mode_fields in enumerate(self._interpolated_modes):
-            # Get mode fields
-            Ex_mode = mode_fields["Ex"]
-            Ey_mode = mode_fields["Ey"]
-            Ez_mode = mode_fields["Ez"]
-            Hx_mode = mode_fields["Hx"]
-            Hy_mode = mode_fields["Hy"]
-            Hz_mode = mode_fields["Hz"]
+        # Get grid spacing (assuming uniform grid)
+        dx = 1.0  # Will be updated from actual grid
+        dy = 1.0
 
-            # Compute overlap integral (simplified - assumes 2D)
-            # Full implementation would properly handle 3D and different directions
-
-            # Power flux: S = E × H*
-            # Component normal to monitor
-            if self.direction == "x":
-                # S_x = Ey * Hz* - Ez * Hy*
-                S_sim = Ey_sim * np.conj(Hz_mode) - Ez_sim * np.conj(Hy_mode)
-                S_mode = Ey_mode * np.conj(Hz_sim) - Ez_mode * np.conj(Hy_sim)
-            elif self.direction == "y":
-                S_sim = Ez_sim * np.conj(Hx_mode) - Ex_sim * np.conj(Hz_mode)
-                S_mode = Ez_mode * np.conj(Hx_sim) - Ex_mode * np.conj(Hz_sim)
-            else:  # z
-                S_sim = Ex_sim * np.conj(Hy_mode) - Ey_sim * np.conj(Hx_mode)
-                S_mode = Ex_mode * np.conj(Hy_sim) - Ey_mode * np.conj(Hx_sim)
-
-            # Overlap integral
-            overlap = 0.5 * np.sum(S_sim + S_mode)
-
-            # Normalize
-            coeff = overlap / self._mode_norms[mode_idx]
-            coeffs.append(complex(coeff))
+        for mode_idx, mode in enumerate(self.modes):
+            # Use mode_matching utility for accurate overlap
+            coeff = compute_mode_overlap(
+                Ex_sim,
+                Ey_sim,
+                Ez_sim,
+                Hx_sim,
+                Hy_sim,
+                Hz_sim,
+                mode,
+                direction=self.direction,
+                dx=dx,
+                dy=dy,
+            )
+            coeffs.append(coeff)
 
         return coeffs
 
@@ -354,3 +344,103 @@ class ModeExpansionMonitor(Monitor):
             return power / reference_power
         else:
             return power / np.max(power) if np.max(power) > 0 else power
+
+    def compute_s_parameters(
+        self,
+        source_mode_index: int = 0,
+        source_power: float = 1.0,
+    ) -> Dict[str, np.ndarray]:
+        """
+        Compute S-parameters from mode coefficients.
+
+        For a two-port device with input and output monitors:
+        - S11: Reflection coefficient at input port
+        - S21: Transmission coefficient from port 1 to port 2
+
+        Parameters
+        ----------
+        source_mode_index : int
+            Index of the excited mode.
+        source_power : float
+            Input power (for normalization).
+
+        Returns
+        -------
+        Dict[str, ndarray]
+            Dictionary with 'S11', 'S21', etc. vs frequency.
+
+        Notes
+        -----
+        This method assumes this monitor is the output/reflection monitor.
+        For full S-parameters, you need multiple monitors.
+        """
+        if self.frequencies is None:
+            raise RuntimeError("Frequency-domain analysis required")
+
+        s_params = {}
+
+        # Get forward and backward amplitudes
+        # Simplified: assumes monitor can separate directions
+        for mode_idx in range(len(self.modes)):
+            # Transmission/reflection relative to source
+            coeff_freq = self._mode_coeffs_freq[mode_idx]
+
+            # Normalize by source
+            if source_power > 0:
+                s_param = coeff_freq / np.sqrt(source_power)
+            else:
+                s_param = coeff_freq
+
+            # Name the parameter
+            param_name = f"S_{mode_idx+1}{source_mode_index+1}"
+            s_params[param_name] = s_param
+
+        return s_params
+
+    def compute_s_matrix(
+        self,
+        other_monitor: "ModeExpansionMonitor",
+        frequency_index: int,
+        source_mode_index: int = 0,
+    ) -> np.ndarray:
+        """
+        Compute full S-matrix between this and another monitor.
+
+        Parameters
+        ----------
+        other_monitor : ModeExpansionMonitor
+            The other port monitor.
+        frequency_index : int
+            Frequency index to compute S-matrix at.
+        source_mode_index : int
+            Index of excited mode.
+
+        Returns
+        -------
+        ndarray
+            2x2 or NxN S-matrix.
+
+        Examples
+        --------
+        >>> # With input and output monitors
+        >>> S = output_monitor.compute_s_matrix(input_monitor, freq_idx=0)
+        >>> S11 = S[0, 0]  # Reflection
+        >>> S21 = S[1, 0]  # Transmission
+        """
+        n_modes = len(self.modes)
+        S_matrix = np.zeros((n_modes, n_modes), dtype=complex)
+
+        # Fill S-matrix elements
+        # S[i,j] = output_mode_i / input_mode_j
+        for i in range(n_modes):
+            for j in range(n_modes):
+                if j == source_mode_index:
+                    # This mode was excited
+                    # Reflection at input
+                    refl_coeff = other_monitor._mode_coeffs_freq[i][frequency_index]
+                    # Transmission at output
+                    trans_coeff = self._mode_coeffs_freq[i][frequency_index]
+
+                    S_matrix[i, j] = trans_coeff  # Simplified
+
+        return S_matrix

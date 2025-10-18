@@ -2,9 +2,11 @@
 
 [![CI](https://github.com/rithulkamesh/prismo/actions/workflows/ci.yml/badge.svg)](https://github.com/rithulkamesh/prismo/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/rithulkamesh/prismo/branch/main/graph/badge.svg)](https://codecov.io/gh/rithulkamesh/prismo)
+[![Documentation Status](https://readthedocs.org/projects/prismo/badge/?version=latest)](https://prismo.readthedocs.io/en/latest/?badge=latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 
-A high-performance FDTD electromagnetic solver for photonics simulation.
+A high-performance Python-based FDTD solver for waveguide photonics.
 
 Prismo implements the Finite-Difference Time-Domain method for solving Maxwell's equations, with features designed for photonic integrated circuits, waveguides, and optical devices.
 
@@ -199,6 +201,33 @@ pytest tests/validation/
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
+
+## Documentation
+
+📚 **[Full Documentation on ReadTheDocs](https://prismo.readthedocs.io/)**
+
+### Quick Links
+
+- **[Installation Guide](https://prismo.readthedocs.io/en/latest/user_guide/installation.html)** - Get set up quickly
+- **[Quick Start Tutorial](https://prismo.readthedocs.io/en/latest/user_guide/quickstart.html)** - Your first simulation in 5 minutes
+- **[Tutorials](https://prismo.readthedocs.io/en/latest/tutorials/index.html)** - Step-by-step guides
+  - [Basic Simulation](https://prismo.readthedocs.io/en/latest/tutorials/basic_simulation.html)
+  - [Waveguide Coupling](https://prismo.readthedocs.io/en/latest/tutorials/waveguide_coupling.html)
+  - [S-Parameter Extraction](https://prismo.readthedocs.io/en/latest/tutorials/sparameters.html)
+  - [Parameter Optimization](https://prismo.readthedocs.io/en/latest/tutorials/optimization.html)
+- **[User Guide](https://prismo.readthedocs.io/en/latest/user_guide/index.html)** - Comprehensive documentation
+  - [Mode Ports](https://prismo.readthedocs.io/en/latest/user_guide/mode_ports.html)
+  - [Boundary Conditions](https://prismo.readthedocs.io/en/latest/user_guide/boundaries.html)
+  - [Validation](https://prismo.readthedocs.io/en/latest/user_guide/validation.html)
+- **[API Reference](https://prismo.readthedocs.io/en/latest/api/index.html)** - Complete API documentation
+- **[Examples](https://prismo.readthedocs.io/en/latest/examples/index.html)** - Sample code and demos
+
+### For Developers
+
+- **[Architecture](https://prismo.readthedocs.io/en/latest/developer/architecture.html)** - Code structure and design
+- **[Contributing](https://prismo.readthedocs.io/en/latest/developer/contributing.html)** - How to contribute
+- **[Testing Guide](https://prismo.readthedocs.io/en/latest/developer/testing.html)** - Testing practices
+- **[Benchmarks](https://prismo.readthedocs.io/en/latest/developer/benchmarks.html)** - Performance metrics
 
 ## Citation
 
