@@ -94,6 +94,16 @@ def check_backends():
                 "ℹ️  CuPy backend not available (install with: pip install cupy-cuda12x)"
             )
 
+        # Test Metal backend if available (macOS)
+        if "metal" in backends:
+            backend_metal = prismo.set_backend("metal")
+            print(f"✅ Metal backend: {backend_metal}")
+            mem_info = backend_metal.get_memory_info()
+            print(f"   Device: {mem_info['device_name']}")
+            print(f"   Unified Memory: {mem_info['unified_memory']}")
+        else:
+            print("ℹ️  Metal backend not available (requires macOS with Metal framework)")
+
         return True
 
     except Exception as e:

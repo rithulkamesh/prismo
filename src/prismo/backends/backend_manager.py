@@ -18,6 +18,13 @@ except ImportError:
     CUPY_AVAILABLE = False
     CuPyBackend = None
 
+# Try to import Metal backend
+try:
+    from .metal_backend import METAL_AVAILABLE, MetalBackend
+except ImportError:
+    METAL_AVAILABLE = False
+    MetalBackend = None
+
 
 # Global backend instance
 _CURRENT_BACKEND: Optional[Backend] = None
@@ -30,7 +37,7 @@ def list_available_backends() -> list[str]:
     Returns
     -------
     List[str]
-        List of backend names (e.g., ['numpy', 'cupy']).
+        List of backend names (e.g., ['numpy', 'cupy', 'metal']).
     """
     available = ["numpy"]  # NumPy is always available
 
@@ -41,6 +48,19 @@ def list_available_backends() -> list[str]:
 
             cp.cuda.Device(0).use()
             available.append("cupy")
+        except Exception:
+            pass
+
+    if METAL_AVAILABLE:
+        try:
+            # Try to initialize Metal to verify it's working
+            import Metal
+            import platform
+            
+            if platform.system() == "Darwin":
+                devices = Metal.MTLCopyAllDevices()
+                if len(devices) > 0:
+                    available.append("metal")
         except Exception:
             pass
 
@@ -61,6 +81,7 @@ def get_backend_info() -> dict[str, any]:
         "current_backend": _CURRENT_BACKEND.name if _CURRENT_BACKEND else None,
         "numpy_available": True,
         "cupy_available": CUPY_AVAILABLE,
+        "metal_available": METAL_AVAILABLE,
     }
 
     if CUPY_AVAILABLE:
@@ -86,6 +107,32 @@ def get_backend_info() -> dict[str, any]:
         except Exception as e:
             info["cuda_error"] = str(e)
 
+    if METAL_AVAILABLE:
+        try:
+            import Metal
+            import platform
+            
+            if platform.system() == "Darwin":
+                devices = Metal.MTLCopyAllDevices()
+                info["num_metal_devices"] = len(devices)
+                
+                # Get info for each Metal device
+                metal_devices = []
+                for i, device in enumerate(devices):
+                    metal_devices.append(
+                        {
+                            "id": i,
+                            "name": device.name(),
+                            "max_buffer_size": device.maxBufferLength(),
+                            "recommended_max_working_set_size": device.recommendedMaxWorkingSetSize(),
+                            "is_low_power": device.isLowPower(),
+                            "is_headless": device.isHeadless(),
+                        }
+                    )
+                info["metal_devices"] = metal_devices
+        except Exception as e:
+            info["metal_error"] = str(e)
+
     return info
 
 
@@ -96,9 +143,9 @@ def set_backend(backend: str, device_id: int = 0) -> Backend:
     Parameters
     ----------
     backend : str
-        Backend name ('numpy' or 'cupy').
+        Backend name ('numpy', 'cupy', or 'metal').
     device_id : int, optional
-        CUDA device ID for GPU backends. Default is 0.
+        Device ID for GPU backends. Default is 0.
 
     Returns
     -------
@@ -123,6 +170,13 @@ def set_backend(backend: str, device_id: int = 0) -> Backend:
                 "Install with: pip install cupy-cuda12x"
             )
         _CURRENT_BACKEND = CuPyBackend(device_id=device_id)
+    elif backend == "metal":
+        if not METAL_AVAILABLE:
+            raise ValueError(
+                "Metal backend requested but Metal is not available. "
+                "Metal backend requires macOS with Metal framework."
+            )
+        _CURRENT_BACKEND = MetalBackend(device_id=device_id)
     else:
         available = list_available_backends()
         raise ValueError(
@@ -142,9 +196,9 @@ def get_backend(backend: Optional[str] = None, device_id: int = 0) -> Backend:
     Parameters
     ----------
     backend : str, optional
-        Backend name ('numpy' or 'cupy'). If None, uses current or auto-detects.
+        Backend name ('numpy', 'cupy', or 'metal'). If None, uses current or auto-detects.
     device_id : int, optional
-        CUDA device ID for GPU backends. Default is 0.
+        Device ID for GPU backends. Default is 0.
 
     Returns
     -------
@@ -164,8 +218,17 @@ def get_backend(backend: Optional[str] = None, device_id: int = 0) -> Backend:
     # Auto-detect best backend
     available = list_available_backends()
 
-    # Prefer GPU if available
-    if "cupy" in available:
+    # Prefer GPU if available (Metal on macOS, CUDA otherwise)
+    import platform
+    if platform.system() == "Darwin" and "metal" in available:
+        warnings.warn(
+            "No backend specified. Auto-selecting Metal (GPU) backend. "
+            "Set explicitly with set_backend() or get_backend(backend='numpy')",
+            UserWarning,
+            stacklevel=2,
+        )
+        return set_backend("metal", device_id)
+    elif "cupy" in available:
         warnings.warn(
             "No backend specified. Auto-selecting CuPy (GPU) backend. "
             "Set explicitly with set_backend() or get_backend(backend='numpy')",
@@ -182,7 +245,7 @@ def auto_select_backend() -> Backend:
     """
     Automatically select the best available backend.
 
-    Prefers GPU (CuPy) if available, otherwise uses CPU (NumPy).
+    Prefers GPU (Metal on macOS, CuPy otherwise) if available, otherwise uses CPU (NumPy).
 
     Returns
     -------

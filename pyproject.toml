@@ -41,6 +41,7 @@ dynamic = ["version"]
 acceleration = [
     "numba>=0.58.0",
     "cupy-cuda12x>=12.0.0;platform_machine=='x86_64'",
+    "pyobjc-framework-Metal>=10.0;sys_platform=='darwin'",
 ]
 # Visualization and analysis
 visualization = [

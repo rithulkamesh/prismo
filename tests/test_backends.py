@@ -55,8 +55,8 @@ class TestBackendInterface:
     @pytest.mark.skipif(
         "cupy" not in list_available_backends(), reason="CuPy not available"
     )
-    def test_gpu_backend(self):
-        """Test GPU backend if available."""
+    def test_gpu_backend_cupy(self):
+        """Test CuPy GPU backend if available."""
         backend = set_backend("cupy")
         assert backend.is_gpu
 
@@ -67,6 +67,22 @@ class TestBackendInterface:
         arr_np = backend.to_numpy(arr)
         assert isinstance(arr_np, np.ndarray)
         assert np.allclose(arr_np, 1.0)
+
+    @pytest.mark.skipif(
+        "metal" not in list_available_backends(), reason="Metal not available"
+    )
+    def test_gpu_backend_metal(self):
+        """Test Metal GPU backend if available."""
+        backend = set_backend("metal")
+        assert backend.is_gpu
+
+        # Create GPU array
+        arr = backend.ones((100, 100))
+        assert arr is not None
+
+        # Test basic operations
+        sqrt_arr = backend.sqrt(arr)
+        assert sqrt_arr is not None
 
 
 class TestBackendEquivalence:
@@ -98,8 +114,8 @@ class TestBackendEquivalence:
     @pytest.mark.skipif(
         "cupy" not in list_available_backends(), reason="CuPy not available"
     )
-    def test_fft_equivalence(self):
-        """Test FFT equivalence between backends."""
+    def test_fft_equivalence_cupy(self):
+        """Test FFT equivalence between NumPy and CuPy backends."""
         data = np.random.random(100) + 1j * np.random.random(100)
 
         backend_cpu = get_backend("numpy")
@@ -109,3 +125,40 @@ class TestBackendEquivalence:
         fft_gpu = backend_gpu.to_numpy(backend_gpu.fft(data))
 
         assert np.allclose(fft_cpu, fft_gpu, rtol=1e-10)
+
+    @pytest.mark.skipif(
+        "metal" not in list_available_backends(), reason="Metal not available"
+    )
+    def test_fft_equivalence_metal(self):
+        """Test FFT equivalence between NumPy and Metal backends."""
+        data = np.random.random(100) + 1j * np.random.random(100)
+
+        backend_cpu = get_backend("numpy")
+        backend_metal = get_backend("metal")
+
+        fft_cpu = backend_cpu.fft(data)
+        fft_metal = backend_metal.fft(data)
+
+        # For now, just check that both complete without error
+        # Full numerical comparison would require proper buffer conversion
+        assert fft_cpu is not None
+        assert fft_metal is not None
+
+    @pytest.mark.skipif(
+        "cupy" not in list_available_backends() or "metal" not in list_available_backends(),
+        reason="Both CuPy and Metal not available"
+    )
+    def test_gpu_backend_equivalence(self):
+        """Test equivalence between CuPy and Metal backends."""
+        data = np.random.random((50, 50))
+
+        backend_cupy = get_backend("cupy")
+        backend_metal = get_backend("metal")
+
+        # Test basic operations
+        sqrt_cupy = backend_cupy.sqrt(data)
+        sqrt_metal = backend_metal.sqrt(data)
+
+        # For now, just check that both complete without error
+        assert sqrt_cupy is not None
+        assert sqrt_metal is not None

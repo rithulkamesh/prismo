@@ -14,7 +14,7 @@ Prismo implements the Finite-Difference Time-Domain method for solving Maxwell's
 ## Features
 
 - **3D vectorial FDTD** on Yee grids with automatic time-stepping
-- **GPU acceleration** via CuPy with transparent CPU fallback
+- **GPU acceleration** via CuPy (CUDA) and Metal (macOS) with transparent CPU fallback
 - **Dispersive materials** including Lorentz, Drude, Debye, and Sellmeier models
 - **Material library** with Si, SiO2, Si3N4, Au, Ag, Al, and ITO
 - **Anisotropic materials** supporting full permittivity and permeability tensors
