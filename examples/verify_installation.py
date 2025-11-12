@@ -25,31 +25,22 @@ def check_imports():
         print(f"   Version: {prismo.__version__}")
 
         # Check all major components
-        from prismo import (
+        from prismo import (  # Backends; Export; Monitors; Lumerical; Materials; Mode solver; Optimization; Core; Analysis
             ADESolver,
-            # Backends
             Backend,
-            # Export
             CSVExporter,
-            # Monitors
             DFTMonitor,
             DrudeMaterial,
             FDTDSolver,
             FluxMonitor,
-            # Lumerical
             FSPParser,
             GridSpec,
-            # Materials
             LorentzMaterial,
             ModeExpansionMonitor,
-            # Mode solver
             ModeSolver,
-            # Optimization
             ParameterSweep,
             ParquetExporter,
-            # Core
             Simulation,
-            # Analysis
             SParameterAnalyzer,
             TensorMaterial,
             YeeGrid,
@@ -102,7 +93,9 @@ def check_backends():
             print(f"   Device: {mem_info['device_name']}")
             print(f"   Unified Memory: {mem_info['unified_memory']}")
         else:
-            print("ℹ️  Metal backend not available (requires macOS with Metal framework)")
+            print(
+                "ℹ️  Metal backend not available (requires macOS with Metal framework)"
+            )
 
         return True
 

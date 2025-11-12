@@ -34,6 +34,10 @@ dependencies = [
     "polars>=0.20.0",
     "psutil>=5.9.0",
 ]
+# Optional GUI dependencies
+# PySide6>=6.5.0  # For desktop GUI
+# meep  # For MEEP FDTD solver (requires compiled MEEP library)
+# fenics-dolfinx  # For FEM solver
 dynamic = ["version"]
 
 [project.optional-dependencies]
@@ -50,6 +54,12 @@ visualization = [
     "vtk>=9.0.0",
     "pyvista>=0.32.0",
 ]
+# GUI dependencies
+gui = ["PySide6>=6.5.0"]
+# FEM solver
+fem = ["fenics-dolfinx>=0.6.0"]
+# MEEP solver (requires compiled MEEP library)
+meep = ["meep>=1.28.0"]
 # Development dependencies
 dev = [
     "pytest>=6.2.0",

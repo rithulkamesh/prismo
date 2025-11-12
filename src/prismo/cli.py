@@ -38,6 +38,10 @@ def main(args: Optional[list[str]] = None) -> int:
     bench_parser = subparsers.add_parser("benchmark", help="Run benchmarks")
     bench_parser.add_argument("--gpu", action="store_true")
 
+    # GUI command
+    gui_parser = subparsers.add_parser("gui", help="Launch graphical user interface")
+    gui_parser.add_argument("--theme", default="default", help="GUI theme")
+
     parsed_args = parser.parse_args(args)
 
     if parsed_args.command == "simulate":
@@ -52,6 +56,25 @@ def main(args: Optional[list[str]] = None) -> int:
         print("Running benchmarks...")
         # TODO: Implement benchmark suite
         return 0
+    elif parsed_args.command == "gui":
+        try:
+            from prismo.gui import GUI_AVAILABLE, MainWindow
+
+            if not GUI_AVAILABLE:
+                print("Error: GUI is not available. Install with: pip install PySide6")
+                return 1
+
+            from PySide6.QtWidgets import QApplication
+            import sys
+
+            app = QApplication(sys.argv)
+            window = MainWindow()
+            window.show()
+            return app.exec()
+        except ImportError as e:
+            print(f"Error launching GUI: {e}")
+            print("Install GUI dependencies with: pip install PySide6")
+            return 1
     else:
         parser.print_help()
         return 1

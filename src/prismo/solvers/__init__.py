@@ -1,16 +1,23 @@
 """
-FDTD solver implementations.
+Solver implementations for electromagnetic simulations.
 
-This module provides different FDTD solver variants:
-- Standard Yee-grid FDTD
-- Higher-order FDTD schemes
-- Parallel and GPU-accelerated solvers
+This module provides various solver implementations including FDTD, FEM, and MEEP.
 """
 
-# Solver implementations will be added here:
-# - YeeSolver: Standard Yee-grid FDTD solver
-# - HighOrderSolver: Higher-order accurate schemes
-# - CUDASolver: GPU-accelerated implementation
-# - ParallelSolver: Multi-threaded CPU implementation
+from .base import FrequencyDomainSolver, SolverBase, TimeDomainSolver
 
-__all__ = []
+# Try to import FEM solver
+try:
+    from .fem_solver import FEMSolver
+
+    __all__ = ["SolverBase", "TimeDomainSolver", "FrequencyDomainSolver", "FEMSolver"]
+except ImportError:
+    __all__ = ["SolverBase", "TimeDomainSolver", "FrequencyDomainSolver"]
+
+# Try to import MEEP solver
+try:
+    from .meep_solver import MEEPSolver
+
+    __all__.append("MEEPSolver")
+except ImportError:
+    pass

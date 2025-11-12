@@ -11,6 +11,7 @@ from .base import Backend
 # Try to import Metal backend if available
 try:
     from .metal_backend import MetalBackend
+
     __all__ = [
         "Backend",
         "get_backend",

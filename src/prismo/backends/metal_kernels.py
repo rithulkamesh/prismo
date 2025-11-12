@@ -1,19 +1,27 @@
 """
 Optimized Metal kernels for FDTD field updates.
 
-This module provides custom Metal Shading Language (MSL) kernels for 
+This module provides custom Metal Shading Language (MSL) kernels for
 high-performance Maxwell equation updates on GPU using Metal compute shaders.
 """
 
-import numpy as np
 from typing import Any, Optional, Tuple
+
+import numpy as np
 
 try:
     import Metal
-    from Metal import MTLDevice, MTLComputePipelineState, MTLCommandQueue
-    from Metal import MTLCommandBuffer, MTLComputeCommandEncoder
-    from Metal import MTLSize, MTLOrigin, MTLResourceStorageModeShared
-    
+    from Metal import (
+        MTLCommandBuffer,
+        MTLCommandQueue,
+        MTLComputeCommandEncoder,
+        MTLComputePipelineState,
+        MTLDevice,
+        MTLOrigin,
+        MTLResourceStorageModeShared,
+        MTLSize,
+    )
+
     METAL_AVAILABLE = True
 except ImportError:
     METAL_AVAILABLE = False
@@ -216,24 +224,24 @@ kernel void update_h_field_2d(
 class MetalKernels:
     """
     Manager for optimized Metal kernels.
-    
+
     Provides compiled Metal kernels for high-performance FDTD updates.
     """
-    
+
     def __init__(self, device: MTLDevice):
         if not METAL_AVAILABLE:
             raise RuntimeError("Metal required for Metal kernels")
-        
+
         self.device = device
         self.command_queue = device.newCommandQueue()
-        
+
         # Compile kernels
         self._compile_kernels()
-    
+
     def _compile_kernels(self) -> None:
         """Compile MSL kernels to compute pipeline states."""
         self.pipelines = {}
-        
+
         # Compile 3D E-field update kernel
         try:
             library = self.device.newLibraryWithSource_options_error_(
@@ -241,18 +249,20 @@ class MetalKernels:
             )
             if library is None:
                 raise RuntimeError("Failed to create Metal library for E-field 3D")
-            
+
             function = library.newFunctionWithName_("update_e_field_3d")
             if function is None:
                 raise RuntimeError("Failed to get E-field 3D function")
-            
-            self.pipelines['update_e_field_3d'] = self.device.newComputePipelineStateWithFunction_error_(
-                function, None
-            )[0]
+
+            self.pipelines["update_e_field_3d"] = (
+                self.device.newComputePipelineStateWithFunction_error_(function, None)[
+                    0
+                ]
+            )
         except Exception as e:
             print(f"Warning: Failed to compile E-field 3D kernel: {e}")
-            self.pipelines['update_e_field_3d'] = None
-        
+            self.pipelines["update_e_field_3d"] = None
+
         # Compile 3D H-field update kernel
         try:
             library = self.device.newLibraryWithSource_options_error_(
@@ -260,18 +270,20 @@ class MetalKernels:
             )
             if library is None:
                 raise RuntimeError("Failed to create Metal library for H-field 3D")
-            
+
             function = library.newFunctionWithName_("update_h_field_3d")
             if function is None:
                 raise RuntimeError("Failed to get H-field 3D function")
-            
-            self.pipelines['update_h_field_3d'] = self.device.newComputePipelineStateWithFunction_error_(
-                function, None
-            )[0]
+
+            self.pipelines["update_h_field_3d"] = (
+                self.device.newComputePipelineStateWithFunction_error_(function, None)[
+                    0
+                ]
+            )
         except Exception as e:
             print(f"Warning: Failed to compile H-field 3D kernel: {e}")
-            self.pipelines['update_h_field_3d'] = None
-        
+            self.pipelines["update_h_field_3d"] = None
+
         # Compile 2D kernels
         try:
             library = self.device.newLibraryWithSource_options_error_(
@@ -279,36 +291,40 @@ class MetalKernels:
             )
             if library is None:
                 raise RuntimeError("Failed to create Metal library for E-field 2D")
-            
+
             function = library.newFunctionWithName_("update_e_field_2d")
             if function is None:
                 raise RuntimeError("Failed to get E-field 2D function")
-            
-            self.pipelines['update_e_field_2d'] = self.device.newComputePipelineStateWithFunction_error_(
-                function, None
-            )[0]
+
+            self.pipelines["update_e_field_2d"] = (
+                self.device.newComputePipelineStateWithFunction_error_(function, None)[
+                    0
+                ]
+            )
         except Exception as e:
             print(f"Warning: Failed to compile E-field 2D kernel: {e}")
-            self.pipelines['update_e_field_2d'] = None
-        
+            self.pipelines["update_e_field_2d"] = None
+
         try:
             library = self.device.newLibraryWithSource_options_error_(
                 METAL_UPDATE_H_FIELD_2D, None, None
             )
             if library is None:
                 raise RuntimeError("Failed to create Metal library for H-field 2D")
-            
+
             function = library.newFunctionWithName_("update_h_field_2d")
             if function is None:
                 raise RuntimeError("Failed to get H-field 2D function")
-            
-            self.pipelines['update_h_field_2d'] = self.device.newComputePipelineStateWithFunction_error_(
-                function, None
-            )[0]
+
+            self.pipelines["update_h_field_2d"] = (
+                self.device.newComputePipelineStateWithFunction_error_(function, None)[
+                    0
+                ]
+            )
         except Exception as e:
             print(f"Warning: Failed to compile H-field 2D kernel: {e}")
-            self.pipelines['update_h_field_2d'] = None
-    
+            self.pipelines["update_h_field_2d"] = None
+
     def launch_e_update_3d(
         self,
         Hx: Any,
@@ -329,7 +345,7 @@ class MetalKernels:
     ) -> None:
         """
         Launch E-field update kernel for 3D.
-        
+
         Parameters
         ----------
         Hx, Hy, Hz : Metal buffers
@@ -345,19 +361,19 @@ class MetalKernels:
         dy, dz : float
             Grid spacing.
         """
-        pipeline = self.pipelines.get('update_e_field_3d')
+        pipeline = self.pipelines.get("update_e_field_3d")
         if pipeline is None:
             raise RuntimeError("E-field 3D kernel not available")
-        
+
         nx, ny, nz = grid_size
-        
+
         # Create command buffer and encoder
         command_buffer = self.command_queue.commandBuffer()
         encoder = command_buffer.computeCommandEncoder()
-        
+
         # Set compute pipeline
         encoder.setComputePipelineState_(pipeline)
-        
+
         # Set buffers
         encoder.setBuffer_offset_atIndex_(Hx, 0, 0)
         encoder.setBuffer_offset_atIndex_(Hy, 0, 1)
@@ -371,48 +387,46 @@ class MetalKernels:
         encoder.setBuffer_offset_atIndex_(Cb_ex, 0, 9)
         encoder.setBuffer_offset_atIndex_(Cb_ey, 0, 10)
         encoder.setBuffer_offset_atIndex_(Cb_ez, 0, 11)
-        
+
         # Set grid size and spacing as constants
         grid_size_data = np.array([nx, ny, nz], dtype=np.uint32)
         grid_size_buffer = self.device.newBufferWithBytes_length_options_(
-            grid_size_data.tobytes(), 
-            grid_size_data.nbytes, 
-            MTLResourceStorageModeShared
+            grid_size_data.tobytes(),
+            grid_size_data.nbytes,
+            MTLResourceStorageModeShared,
         )
         encoder.setBuffer_offset_atIndex_(grid_size_buffer, 0, 12)
-        
+
         dy_data = np.array([dy], dtype=np.float32)
         dy_buffer = self.device.newBufferWithBytes_length_options_(
-            dy_data.tobytes(), 
-            dy_data.nbytes, 
-            MTLResourceStorageModeShared
+            dy_data.tobytes(), dy_data.nbytes, MTLResourceStorageModeShared
         )
         encoder.setBuffer_offset_atIndex_(dy_buffer, 0, 13)
-        
+
         dz_data = np.array([dz], dtype=np.float32)
         dz_buffer = self.device.newBufferWithBytes_length_options_(
-            dz_data.tobytes(), 
-            dz_data.nbytes, 
-            MTLResourceStorageModeShared
+            dz_data.tobytes(), dz_data.nbytes, MTLResourceStorageModeShared
         )
         encoder.setBuffer_offset_atIndex_(dz_buffer, 0, 14)
-        
+
         # Calculate threadgroup size and grid size
         threadgroup_size = MTLSize(8, 8, 8)
         grid_size_metal = MTLSize(
             (nx + threadgroup_size.width - 1) // threadgroup_size.width,
             (ny + threadgroup_size.height - 1) // threadgroup_size.height,
-            (nz + threadgroup_size.depth - 1) // threadgroup_size.depth
+            (nz + threadgroup_size.depth - 1) // threadgroup_size.depth,
         )
-        
+
         # Dispatch compute
-        encoder.dispatchThreadgroups_threadsPerThreadgroup_(grid_size_metal, threadgroup_size)
-        
+        encoder.dispatchThreadgroups_threadsPerThreadgroup_(
+            grid_size_metal, threadgroup_size
+        )
+
         # End encoding and commit
         encoder.endEncoding()
         command_buffer.commit()
         command_buffer.waitUntilCompleted()
-    
+
     def launch_h_update_3d(
         self,
         Ex: Any,
@@ -429,7 +443,7 @@ class MetalKernels:
     ) -> None:
         """
         Launch H-field update kernel for 3D.
-        
+
         Parameters
         ----------
         Ex, Ey, Ez : Metal buffers
@@ -443,19 +457,19 @@ class MetalKernels:
         dy, dz : float
             Grid spacing.
         """
-        pipeline = self.pipelines.get('update_h_field_3d')
+        pipeline = self.pipelines.get("update_h_field_3d")
         if pipeline is None:
             raise RuntimeError("H-field 3D kernel not available")
-        
+
         nx, ny, nz = grid_size
-        
+
         # Create command buffer and encoder
         command_buffer = self.command_queue.commandBuffer()
         encoder = command_buffer.computeCommandEncoder()
-        
+
         # Set compute pipeline
         encoder.setComputePipelineState_(pipeline)
-        
+
         # Set buffers
         encoder.setBuffer_offset_atIndex_(Ex, 0, 0)
         encoder.setBuffer_offset_atIndex_(Ey, 0, 1)
@@ -465,58 +479,58 @@ class MetalKernels:
         encoder.setBuffer_offset_atIndex_(Hz, 0, 5)
         encoder.setBuffer_offset_atIndex_(Da, 0, 6)
         encoder.setBuffer_offset_atIndex_(Db, 0, 7)
-        
+
         # Set grid size and spacing as constants
         grid_size_data = np.array([nx, ny, nz], dtype=np.uint32)
         grid_size_buffer = self.device.newBufferWithBytes_length_options_(
-            grid_size_data.tobytes(), 
-            grid_size_data.nbytes, 
-            MTLResourceStorageModeShared
+            grid_size_data.tobytes(),
+            grid_size_data.nbytes,
+            MTLResourceStorageModeShared,
         )
         encoder.setBuffer_offset_atIndex_(grid_size_buffer, 0, 8)
-        
+
         dy_data = np.array([dy], dtype=np.float32)
         dy_buffer = self.device.newBufferWithBytes_length_options_(
-            dy_data.tobytes(), 
-            dy_data.nbytes, 
-            MTLResourceStorageModeShared
+            dy_data.tobytes(), dy_data.nbytes, MTLResourceStorageModeShared
         )
         encoder.setBuffer_offset_atIndex_(dy_buffer, 0, 9)
-        
+
         dz_data = np.array([dz], dtype=np.float32)
         dz_buffer = self.device.newBufferWithBytes_length_options_(
-            dz_data.tobytes(), 
-            dz_data.nbytes, 
-            MTLResourceStorageModeShared
+            dz_data.tobytes(), dz_data.nbytes, MTLResourceStorageModeShared
         )
         encoder.setBuffer_offset_atIndex_(dz_buffer, 0, 10)
-        
+
         # Calculate threadgroup size and grid size
         threadgroup_size = MTLSize(8, 8, 8)
         grid_size_metal = MTLSize(
             (nx + threadgroup_size.width - 1) // threadgroup_size.width,
             (ny + threadgroup_size.height - 1) // threadgroup_size.height,
-            (nz + threadgroup_size.depth - 1) // threadgroup_size.depth
+            (nz + threadgroup_size.depth - 1) // threadgroup_size.depth,
         )
-        
+
         # Dispatch compute
-        encoder.dispatchThreadgroups_threadsPerThreadgroup_(grid_size_metal, threadgroup_size)
-        
+        encoder.dispatchThreadgroups_threadsPerThreadgroup_(
+            grid_size_metal, threadgroup_size
+        )
+
         # End encoding and commit
         encoder.endEncoding()
         command_buffer.commit()
         command_buffer.waitUntilCompleted()
 
 
-def get_optimal_threadgroup_size(grid_shape: Tuple[int, int, int]) -> Tuple[int, int, int]:
+def get_optimal_threadgroup_size(
+    grid_shape: Tuple[int, int, int],
+) -> Tuple[int, int, int]:
     """
     Determine optimal Metal threadgroup size for given grid.
-    
+
     Parameters
     ----------
     grid_shape : Tuple[int, int, int]
         Grid dimensions (nx, ny, nz).
-    
+
     Returns
     -------
     Tuple[int, int, int]
@@ -524,7 +538,7 @@ def get_optimal_threadgroup_size(grid_shape: Tuple[int, int, int]) -> Tuple[int,
     """
     # Standard starting point for Metal
     threadgroup_size = [8, 8, 8]
-    
+
     # Adjust for small grids
     if grid_shape[0] < 8:
         threadgroup_size[0] = grid_shape[0]
@@ -532,33 +546,32 @@ def get_optimal_threadgroup_size(grid_shape: Tuple[int, int, int]) -> Tuple[int,
         threadgroup_size[1] = grid_shape[1]
     if grid_shape[2] < 8:
         threadgroup_size[2] = grid_shape[2]
-    
+
     # Total threads per threadgroup should be <= 1024 for most Metal devices
     total = threadgroup_size[0] * threadgroup_size[1] * threadgroup_size[2]
-    
+
     while total > 1024:
         # Reduce largest dimension
         max_idx = np.argmax(threadgroup_size)
         threadgroup_size[max_idx] = max(1, threadgroup_size[max_idx] // 2)
         total = threadgroup_size[0] * threadgroup_size[1] * threadgroup_size[2]
-    
+
     return tuple(threadgroup_size)
 
 
 def benchmark_metal_kernels(
-    grid_size: Tuple[int, int, int], 
-    num_iterations: int = 100
+    grid_size: Tuple[int, int, int], num_iterations: int = 100
 ) -> dict:
     """
     Benchmark Metal kernels performance.
-    
+
     Parameters
     ----------
     grid_size : Tuple[int, int, int]
         Grid dimensions to benchmark.
     num_iterations : int
         Number of iterations for timing.
-    
+
     Returns
     -------
     dict
@@ -566,14 +579,14 @@ def benchmark_metal_kernels(
     """
     if not METAL_AVAILABLE:
         return {"error": "Metal not available"}
-    
+
     import time
-    
+
     # This would need to be implemented with actual Metal device
     # For now, return placeholder
     return {
         "grid_size": grid_size,
         "iterations": num_iterations,
         "backend": "metal",
-        "note": "Benchmark not yet implemented - requires Metal device setup"
+        "note": "Benchmark not yet implemented - requires Metal device setup",
     }

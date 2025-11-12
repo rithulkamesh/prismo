@@ -16,6 +16,7 @@ from prismo.backends.numpy_backend import NumPyBackend
 METAL_AVAILABLE = False
 try:
     import Metal
+
     if platform.system() == "Darwin":
         devices = Metal.MTLCopyAllDevices()
         METAL_AVAILABLE = len(devices) > 0
@@ -23,8 +24,8 @@ except ImportError:
     pass
 
 pytestmark = pytest.mark.skipif(
-    not METAL_AVAILABLE, 
-    reason="Metal not available (requires macOS with Metal framework)"
+    not METAL_AVAILABLE,
+    reason="Metal not available (requires macOS with Metal framework)",
 )
 
 
@@ -41,7 +42,7 @@ class TestMetalBackend:
         """Test Metal backend device information."""
         backend = get_backend("metal")
         mem_info = backend.get_memory_info()
-        
+
         assert mem_info["backend"] == "metal"
         assert "device_name" in mem_info
         assert "unified_memory" in mem_info
@@ -143,7 +144,7 @@ class TestMetalBackend:
         # Create test matrices
         a = np.random.random((5, 5))
         b = np.random.random((5, 5))
-        
+
         arr_a = backend.array(a)
         arr_b = backend.array(b)
 
@@ -300,6 +301,7 @@ class TestMetalBackendIntegration:
         # Reset current backend
         from prismo.backends.backend_manager import _CURRENT_BACKEND
         import prismo.backends.backend_manager as bm
+
         bm._CURRENT_BACKEND = None
 
         # Auto-select should prefer Metal on macOS
@@ -309,15 +311,15 @@ class TestMetalBackendIntegration:
     def test_backend_info_includes_metal(self):
         """Test that backend info includes Metal device information."""
         from prismo.backends.backend_manager import get_backend_info
-        
+
         info = get_backend_info()
         assert "metal_available" in info
         assert info["metal_available"] is True
-        
+
         if "metal_devices" in info:
             assert isinstance(info["metal_devices"], list)
             assert len(info["metal_devices"]) > 0
-            
+
             device = info["metal_devices"][0]
             assert "id" in device
             assert "name" in device
@@ -331,6 +333,7 @@ class TestMetalKernels:
         """Test that Metal kernels can be imported."""
         try:
             from prismo.backends.metal_kernels import MetalKernels
+
             assert MetalKernels is not None
         except ImportError:
             pytest.skip("Metal kernels not available")
@@ -340,7 +343,7 @@ class TestMetalKernels:
         try:
             from prismo.backends.metal_kernels import MetalKernels
             import Metal
-            
+
             device = Metal.MTLCopyAllDevices()[0]
             kernels = MetalKernels(device)
             assert kernels is not None
@@ -351,7 +354,7 @@ class TestMetalKernels:
         """Test optimal threadgroup size calculation."""
         try:
             from prismo.backends.metal_kernels import get_optimal_threadgroup_size
-            
+
             # Test various grid sizes
             sizes = [
                 (10, 10, 10),
@@ -360,12 +363,12 @@ class TestMetalKernels:
                 (8, 8, 8),
                 (1, 1, 1),
             ]
-            
+
             for grid_size in sizes:
                 threadgroup_size = get_optimal_threadgroup_size(grid_size)
                 assert len(threadgroup_size) == 3
                 assert all(size > 0 for size in threadgroup_size)
-                
+
                 # Total threads should be <= 1024
                 total = threadgroup_size[0] * threadgroup_size[1] * threadgroup_size[2]
                 assert total <= 1024

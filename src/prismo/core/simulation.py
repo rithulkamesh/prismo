@@ -16,6 +16,7 @@ from prismo.core.grid import GridSpec, YeeGrid
 from prismo.core.solver import FDTDSolver
 from prismo.monitors.base import Monitor
 from prismo.monitors.field import FieldMonitor
+from prismo.solvers.base import SolverBase, TimeDomainSolver
 from prismo.sources.base import Source
 
 
@@ -41,6 +42,10 @@ class Simulation:
         Number of PML layers for absorbing boundaries, default=10.
     courant_factor : float, optional
         Safety factor for time step calculation, default=0.9.
+    solver_type : str, optional
+        Type of solver to use. Options: "fdtd" (default), "meep", "fem".
+        "fdtd" uses the native FDTD solver, "meep" uses MIT MEEP,
+        "fem" uses the FEM solver (frequency-domain only).
     """
 
     def __init__(
@@ -50,6 +55,7 @@ class Simulation:
         boundary_conditions: str = "pml",
         pml_layers: int = 10,
         courant_factor: float = 0.9,
+        solver_type: str = "fdtd",
     ):
         # Create grid
         self.grid_spec = GridSpec(
@@ -64,13 +70,14 @@ class Simulation:
         self.resolution = resolution
         self.boundary_conditions = boundary_conditions
         self.courant_factor = courant_factor
+        self.solver_type = solver_type.lower()
 
         # Create fields
         self.fields = ElectromagneticFields(self.grid)
 
-        # Set up solver
-        self.dt = self.grid.get_time_step(courant_factor)
-        self.solver = FDTDSolver(self.grid, self.dt)
+        # Set up solver using factory pattern
+        self.solver = self._create_solver(courant_factor)
+        self.dt = self.solver.get_time_step()
 
         # Storage for sources and monitors
         self.sources: list[Source] = []
@@ -79,6 +86,51 @@ class Simulation:
         # Simulation state
         self.step_count = 0
         self.current_time = 0.0
+
+    def _create_solver(self, courant_factor: float) -> SolverBase:
+        """
+        Create solver based on solver_type parameter.
+
+        Parameters
+        ----------
+        courant_factor : float
+            Safety factor for time step calculation.
+
+        Returns
+        -------
+        SolverBase
+            The created solver instance.
+        """
+        if self.solver_type == "fdtd":
+            dt = self.grid.get_time_step(courant_factor)
+            return FDTDSolver(self.grid, dt)
+        elif self.solver_type == "meep":
+            # Try to import and use MEEP solver
+            try:
+                from prismo.solvers.meep_solver import MEEPSolver
+
+                return MEEPSolver(self.grid)
+            except ImportError:
+                raise ImportError(
+                    "MEEP solver requested but MEEP is not available. "
+                    "Install with: conda install -c conda-forge pymeeus meep"
+                )
+        elif self.solver_type == "fem":
+            # Try to import and use FEM solver
+            try:
+                from prismo.solvers.fem_solver import FEMSolver
+
+                return FEMSolver(self.grid)
+            except ImportError:
+                raise ImportError(
+                    "FEM solver requested but FEniCS is not available. "
+                    "Install with: pip install fenics-dolfinx"
+                )
+        else:
+            raise ValueError(
+                f"Unknown solver type '{self.solver_type}'. "
+                "Options: 'fdtd', 'meep', 'fem'"
+            )
 
     def add_source(self, source: Source) -> None:
         """
@@ -148,20 +200,26 @@ class Simulation:
         """
         Run a single time step of the simulation.
         """
-        # Step FDTD solver (update H fields to n+1/2, then E fields to n+1)
-        self.solver.step(self.fields)
+        # Step solver (works for time-domain solvers)
+        if isinstance(self.solver, TimeDomainSolver):
+            self.solver.step(self.fields)
 
-        # Update simulation state (time is now n+1)
-        self.step_count += 1
-        self.current_time += self.dt
+            # Update simulation state (time is now n+1)
+            self.step_count += 1
+            self.current_time += self.dt
 
-        # Update sources at current time (n+1, matching E-field time)
-        for source in self.sources:
-            source.update_fields(self.fields, self.current_time, self.dt)
+            # Update sources at current time (n+1, matching E-field time)
+            for source in self.sources:
+                source.update_fields(self.fields, self.current_time, self.dt)
 
-        # Update monitors
-        for monitor in self.monitors:
-            monitor.update(self.fields, self.current_time, self.dt)
+            # Update monitors
+            for monitor in self.monitors:
+                monitor.update(self.fields, self.current_time, self.dt)
+        else:
+            raise NotImplementedError(
+                f"step() not implemented for solver type {type(self.solver)}. "
+                "Use solve() for frequency-domain solvers."
+            )
 
     def get_field_data(self, monitor: FieldMonitor, component: str) -> np.ndarray:
         """

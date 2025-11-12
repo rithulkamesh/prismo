@@ -16,6 +16,7 @@ from typing import Optional, Union
 import numpy as np
 
 from prismo.backends import Backend, get_backend
+from prismo.solvers.base import TimeDomainSolver
 
 from .fields import ElectromagneticFields
 from .grid import YeeGrid
@@ -568,7 +569,7 @@ class MaxwellUpdater:
         )
 
 
-class FDTDSolver:
+class FDTDSolver(TimeDomainSolver):
     """
     High-level FDTD solver combining grid, fields, and updater.
 
@@ -592,6 +593,7 @@ class FDTDSolver:
         material_arrays: Optional[dict] = None,
         backend: Optional[Union[str, Backend]] = None,
     ):
+        super().__init__(grid)
         self.grid = grid
 
         # Initialize backend
@@ -610,9 +612,6 @@ class FDTDSolver:
 
         self.fields = ElectromagneticFields(grid, backend=self.backend)
         self.updater = MaxwellUpdater(grid, dt, material_arrays, backend=self.backend)
-
-        self.time = 0.0
-        self.step_count = 0
 
     def run(self, total_time: float, callback: Optional[callable] = None) -> None:
         """
@@ -676,6 +675,10 @@ class FDTDSolver:
         self.updater.step(fields)
         self.time += self.updater.get_time_step()
         self.step_count += 1
+
+    def get_fields(self) -> ElectromagneticFields:
+        """Get the current electromagnetic fields."""
+        return self.fields
 
     def reset(self) -> None:
         """Reset simulation to initial state."""

@@ -54,9 +54,10 @@ def list_available_backends() -> list[str]:
     if METAL_AVAILABLE:
         try:
             # Try to initialize Metal to verify it's working
-            import Metal
             import platform
-            
+
+            import Metal
+
             if platform.system() == "Darwin":
                 devices = Metal.MTLCopyAllDevices()
                 if len(devices) > 0:
@@ -109,13 +110,14 @@ def get_backend_info() -> dict[str, any]:
 
     if METAL_AVAILABLE:
         try:
-            import Metal
             import platform
-            
+
+            import Metal
+
             if platform.system() == "Darwin":
                 devices = Metal.MTLCopyAllDevices()
                 info["num_metal_devices"] = len(devices)
-                
+
                 # Get info for each Metal device
                 metal_devices = []
                 for i, device in enumerate(devices):
@@ -220,6 +222,7 @@ def get_backend(backend: Optional[str] = None, device_id: int = 0) -> Backend:
 
     # Prefer GPU if available (Metal on macOS, CUDA otherwise)
     import platform
+
     if platform.system() == "Darwin" and "metal" in available:
         warnings.warn(
             "No backend specified. Auto-selecting Metal (GPU) backend. "

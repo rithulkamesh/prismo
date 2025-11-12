@@ -145,8 +145,9 @@ class TestBackendEquivalence:
         assert fft_metal is not None
 
     @pytest.mark.skipif(
-        "cupy" not in list_available_backends() or "metal" not in list_available_backends(),
-        reason="Both CuPy and Metal not available"
+        "cupy" not in list_available_backends()
+        or "metal" not in list_available_backends(),
+        reason="Both CuPy and Metal not available",
     )
     def test_gpu_backend_equivalence(self):
         """Test equivalence between CuPy and Metal backends."""

@@ -29,6 +29,8 @@ from .analysis import SParameterAnalyzer, export_touchstone
 from .backends import Backend, get_backend, list_available_backends, set_backend
 
 # Boundaries
+from .boundaries.magnetic_pml import MagneticPML, MagneticPMLParams
+from .boundaries.pmc import PMC
 from .boundaries.pml import CPML, PMLParams
 from .core.fields import ElectromagneticFields
 from .core.grid import GridSpec, YeeGrid
@@ -151,6 +153,9 @@ __all__ = [
     # Boundaries
     "CPML",
     "PMLParams",
+    "PMC",
+    "MagneticPML",
+    "MagneticPMLParams",
     # Materials
     "DispersiveMaterial",
     "LorentzMaterial",
