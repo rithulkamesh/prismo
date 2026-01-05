@@ -6,11 +6,14 @@ GPU-accelerated array operations on Apple Silicon and Intel Macs.
 """
 
 import platform
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import numpy as np
 
 from .base import Backend
+
+if TYPE_CHECKING:
+    from Metal import MTLBuffer
 
 try:
     import Metal
@@ -25,6 +28,7 @@ except ImportError:
     METAL_AVAILABLE = False
     Metal = None
     MTLDevice = None
+    MTLBuffer = None  # type: ignore
 
 
 class MetalBackend(Backend):

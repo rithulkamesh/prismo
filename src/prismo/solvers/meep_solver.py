@@ -49,9 +49,9 @@ class MEEPSolver(TimeDomainSolver):
     ):
         if not MEEP_AVAILABLE:
             raise ImportError(
-                "MEEP is not available. Install with: "
-                "conda install -c conda-forge pymeeus meep or "
-                "pip install meep (requires compiled MEEP library)"
+                "MEEP is not available. Install with:\n"
+                "  conda install -c conda-forge pymeeus meep\n"
+                "  or from source: https://meep.readthedocs.io/en/latest/Installation/"
             )
 
         super().__init__(grid)

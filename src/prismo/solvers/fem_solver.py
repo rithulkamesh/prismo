@@ -63,7 +63,9 @@ class FEMSolver(FrequencyDomainSolver):
     ):
         if not FENICS_AVAILABLE:
             raise ImportError(
-                "FEniCS is not available. Install with: pip install fenics-dolfinx"
+                "FEniCS is not available. FEniCS is not on PyPI.\n"
+                "Install with: conda install -c conda-forge fenics-dolfinx\n"
+                "or from source: https://fenicsproject.org/download/"
             )
 
         super().__init__(grid)
