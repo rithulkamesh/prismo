@@ -122,7 +122,9 @@ class TestBackendEquivalence:
         backend_gpu = get_backend("cupy")
 
         fft_cpu = backend_cpu.fft(data)
-        fft_gpu = backend_gpu.to_numpy(backend_gpu.fft(data))
+        # Convert to CuPy array first, then do FFT
+        data_gpu = backend_gpu.array(data)
+        fft_gpu = backend_gpu.to_numpy(backend_gpu.fft(data_gpu))
 
         assert np.allclose(fft_cpu, fft_gpu, rtol=1e-10)
 

@@ -96,10 +96,14 @@ def get_backend_info() -> dict[str, any]:
             devices = []
             for i in range(info["num_devices"]):
                 device = cp.cuda.Device(i)
+                try:
+                    device_name = device.name
+                except AttributeError:
+                    device_name = f"GPU:{i}"
                 devices.append(
                     {
                         "id": i,
-                        "name": device.name,
+                        "name": device_name,
                         "compute_capability": device.compute_capability,
                         "total_memory_mb": device.mem_info[1] / (1024**2),
                     }

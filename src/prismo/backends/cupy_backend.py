@@ -146,10 +146,17 @@ class CuPyBackend(Backend):
     def get_memory_info(self) -> dict:
         """Get GPU memory usage information."""
         mempool = cp.get_default_memory_pool()
+        # Try to get device name, fallback to device ID if not available
+        try:
+            device_name = self.device.name
+        except AttributeError:
+            # CuPy 12.x doesn't have device.name, use device ID instead
+            device_name = f"GPU:{self.device_id}"
+        
         return {
             "backend": "cupy",
             "device": f"GPU:{self.device_id}",
-            "device_name": self.device.name,
+            "device_name": device_name,
             "used_bytes": mempool.used_bytes(),
             "used_mb": mempool.used_bytes() / (1024**2),
             "total_bytes": mempool.total_bytes(),
@@ -191,4 +198,8 @@ class CuPyBackend(Backend):
 
     def __repr__(self) -> str:
         """String representation."""
-        return f"CuPyBackend(device={self.device_id}, name='{self.device.name}')"
+        try:
+            device_name = self.device.name
+        except AttributeError:
+            device_name = f"GPU:{self.device_id}"
+        return f"CuPyBackend(device={self.device_id}, name='{device_name}')"
