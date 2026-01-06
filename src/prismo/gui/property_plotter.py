@@ -2,130 +2,292 @@
 Material property plotting widget.
 
 This module provides widgets for plotting material properties as a function
-of frequency, including dispersion curves and loss tangents.
+of frequency, including dispersion curves and loss tangents using Dear PyGui.
 """
 
+import os
 from typing import Optional
 
 try:
-    from PySide6.QtCore import Qt
-    from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox
+    import dearpygui.dearpygui as dpg
 
     GUI_AVAILABLE = True
 except ImportError:
     GUI_AVAILABLE = False
-    Qt = None
-    QWidget = object
+    dpg = None
 
 # Try to import plotting libraries
 try:
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-    from matplotlib.figure import Figure
+    import numpy as np
 
-    MATPLOTLIB_AVAILABLE = True
+    NUMPY_AVAILABLE = True
 except ImportError:
-    MATPLOTLIB_AVAILABLE = False
-    FigureCanvas = None
-    Figure = None
-
-try:
-    import pyqtgraph as pg
-
-    PYQTGRAPH_AVAILABLE = True
-except ImportError:
-    PYQTGRAPH_AVAILABLE = False
-    pg = None
+    NUMPY_AVAILABLE = False
+    np = None
 
 
-class PropertyPlotter(QWidget):
+# Module-level font ID for Greek symbol support
+_UNICODE_FONT_ID: Optional[int] = None
+
+
+def _find_font_with_fontconfig() -> Optional[str]:
+    """
+    Try to find a font that supports Greek characters using fontconfig.
+    
+    Returns
+    -------
+    str or None
+        Path to a font file, or None if not found.
+    """
+    import subprocess
+    
+    try:
+        # Try to find DejaVu Sans using fc-match
+        result = subprocess.run(
+            ["fc-match", "-f", "%{file}", "DejaVu Sans"],
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            font_path = result.stdout.strip()
+            if os.path.exists(font_path):
+                return font_path
+    except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
+        pass
+    
+    try:
+        # Try to find any sans-serif font that supports Greek
+        result = subprocess.run(
+            ["fc-match", "-f", "%{file}", "sans-serif"],
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            font_path = result.stdout.strip()
+            if os.path.exists(font_path):
+                return font_path
+    except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
+        pass
+    
+    return None
+
+
+def load_unicode_font(font_registry: Optional[int] = None) -> Optional[int]:
+    """
+    Load a font that supports Unicode symbols, especially Greek characters.
+    
+    Tries multiple methods to find a suitable font:
+    1. Uses fontconfig (Linux) to find system fonts
+    2. Tries common system font paths
+    3. Falls back to default font
+    
+    Should be called once during GUI initialization.
+    
+    Parameters
+    ----------
+    font_registry : int, optional
+        Font registry ID. If None, creates a new registry.
+    
+    Returns
+    -------
+    int or None
+        Font ID if successful, None otherwise.
+    """
+    global _UNICODE_FONT_ID
+    
+    if not GUI_AVAILABLE:
+        return None
+    
+    if _UNICODE_FONT_ID is not None:
+        return _UNICODE_FONT_ID
+    
+    font_paths = []
+    
+    # Method 1: Try fontconfig (Linux)
+    fontconfig_font = _find_font_with_fontconfig()
+    if fontconfig_font:
+        font_paths.append(fontconfig_font)
+    
+    # Method 2: Common system font paths (ordered by likelihood of supporting Greek)
+    font_paths.extend([
+        # Linux - DejaVu fonts (excellent Unicode support)
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        "/usr/share/fonts/dejavu-sans-fonts/DejaVuSans.ttf",
+        # Linux - Liberation fonts
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        # Linux - Noto fonts (excellent Unicode support)
+        "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+        "/usr/share/fonts/noto/NotoSans-Regular.ttf",
+        # Linux - Other common locations
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        "/usr/share/fonts/truetype/arphic/ukai.ttc",
+        # macOS - Unicode fonts
+        "/Library/Fonts/Arial Unicode.ttf",
+        "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",
+        # Windows
+        "C:/Windows/Fonts/arial.ttf",
+        "C:/Windows/Fonts/calibri.ttf",
+        "C:/Windows/Fonts/ARIALUNI.TTF",  # Arial Unicode MS
+        # NixOS/other Linux distributions
+        "/nix/store/*/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    ])
+    
+    # Also try to find DejaVu in common locations using glob
+    try:
+        import glob
+        dejavu_patterns = [
+            "/usr/share/fonts/**/DejaVuSans*.ttf",
+            "/usr/share/fonts/**/*DejaVu*.ttf",
+            "/nix/store/*/share/fonts/**/DejaVuSans*.ttf",
+        ]
+        for pattern in dejavu_patterns:
+            matches = glob.glob(pattern, recursive=True)
+            if matches:
+                font_paths.extend(matches[:2])  # Add first 2 matches
+                break
+    except Exception:
+        pass
+    
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_paths = []
+    for path in font_paths:
+        if path and path not in seen:
+            seen.add(path)
+            unique_paths.append(path)
+    
+    # Try to load a font
+    for font_path in unique_paths:
+        if not font_path or not os.path.exists(font_path):
+            continue
+            
+        try:
+            # Load font with default size (13px is Dear PyGui default)
+            # Dear PyGui automatically supports Unicode if the font supports it
+            if font_registry is not None:
+                font_id = dpg.add_font(font_path, 13, parent=font_registry)
+            else:
+                with dpg.font_registry() as reg_id:
+                    font_id = dpg.add_font(font_path, 13, parent=reg_id)
+            
+            # Store and return the font ID
+            _UNICODE_FONT_ID = font_id
+            return font_id
+        except Exception as e:
+            # If loading fails, try next font
+            continue
+    
+    # If no system font found, return None
+    # Dear PyGui's default font might support basic Unicode on some systems
+    return None
+
+
+def get_unicode_font() -> Optional[int]:
+    """Get the loaded Unicode font ID, or None if not loaded."""
+    return _UNICODE_FONT_ID
+
+
+class PropertyPlotter:
     """
     Material property plotting widget.
 
     Provides plots for frequency-dependent material properties including
-    permittivity, permeability, refractive index, and loss tangents.
+    permittivity, permeability, refractive index, and loss tangents using Dear PyGui.
     """
 
-    def __init__(self, parent: Optional[QWidget] = None):
-        """Initialize the property plotter."""
+    def __init__(self, font_id: Optional[int] = None):
+        """
+        Initialize the property plotter.
+        
+        Parameters
+        ----------
+        font_id : int, optional
+            Font ID for Unicode/Greek symbol support. If None, tries to get
+            the global Unicode font.
+        """
         if not GUI_AVAILABLE:
             raise ImportError(
-                "PySide6 is required for GUI. Install with: pip install PySide6"
+                "Dear PyGui is required for GUI. Install with: pip install dearpygui"
             )
 
-        super().__init__(parent)
-        self.setWindowTitle("Material Property Plotter")
+        # Use provided font or get the global Unicode font
+        self.font_id = font_id if font_id is not None else get_unicode_font()
 
-        # Create layout
-        layout = QVBoxLayout(self)
-
-        # Add header
-        header = QLabel("Material Properties")
-        header.setStyleSheet("font-size: 14pt; font-weight: bold;")
-        layout.addWidget(header)
+        # Create header
+        header_text = dpg.add_text("Material Properties", color=(255, 255, 255))
+        if self.font_id is not None:
+            dpg.bind_item_font(header_text, self.font_id)
 
         # Add property selection
-        controls_layout = QHBoxLayout()
-        controls_layout.addWidget(QLabel("Property:"))
-        self.property_combo = QComboBox()
-        self.property_combo.addItems(
-            [
-                "Permittivity (ε)",
-                "Permeability (μ)",
-                "Refractive Index (n)",
-                "Loss Tangent",
-            ]
-        )
-        self.property_combo.currentTextChanged.connect(self._update_plot)
-        controls_layout.addWidget(self.property_combo)
-        controls_layout.addStretch()
-        layout.addLayout(controls_layout)
-
-        # Create plot widget
-        if MATPLOTLIB_AVAILABLE:
-            self._setup_matplotlib_plot(layout)
-        elif PYQTGRAPH_AVAILABLE:
-            self._setup_pyqtgraph_plot(layout)
-        else:
-            placeholder = QLabel(
-                "Plotting requires Matplotlib or PyQtGraph.\n"
-                "Install with: pip install matplotlib"
+        with dpg.group(horizontal=True):
+            prop_label = dpg.add_text("Property:")
+            if self.font_id is not None:
+                dpg.bind_item_font(prop_label, self.font_id)
+            
+            self.property_combo = dpg.add_combo(
+                items=[
+                    "Permittivity (ε)",
+                    "Permeability (μ)",
+                    "Refractive Index (n)",
+                    "Loss Tangent",
+                ],
+                default_value="Permittivity (ε)",
+                width=200,
+                callback=self._update_plot,
             )
-            placeholder.setAlignment(Qt.AlignCenter)
-            layout.addWidget(placeholder)
+            if self.font_id is not None:
+                dpg.bind_item_font(self.property_combo, self.font_id)
 
-    def _setup_matplotlib_plot(self, layout: QVBoxLayout) -> None:
-        """Set up Matplotlib-based plotting."""
-        self.figure = Figure(figsize=(8, 4))
-        self.canvas = FigureCanvas(self.figure)
-        self.ax = self.figure.add_subplot(111)
-        self.ax.set_xlabel("Frequency (Hz)")
-        self.ax.set_ylabel("Property Value")
-        self.ax.grid(True)
-        layout.addWidget(self.canvas)
+        dpg.add_separator()
 
-    def _setup_pyqtgraph_plot(self, layout: QVBoxLayout) -> None:
-        """Set up PyQtGraph-based plotting."""
-        # PyQtGraph integration would go here
-        placeholder = QLabel("PyQtGraph plot (to be implemented)")
-        placeholder.setMinimumHeight(200)
-        layout.addWidget(placeholder)
+        # Create plot widget using Dear PyGui's built-in plotting
+        if not NUMPY_AVAILABLE:
+            dpg.add_text("NumPy required for plotting", color=(200, 200, 200))
+            dpg.add_separator()
+        
+        with dpg.plot(label="Material Property", height=300, width=-1, tag="property_plot"):
+            dpg.add_plot_legend()
+            dpg.add_plot_axis(dpg.mvXAxis, label="Frequency (Hz)", tag="property_plot_x_axis")
+            dpg.add_plot_axis(dpg.mvYAxis, label="Property Value", tag="property_plot_y_axis")
+            # Apply Unicode font to plot if available (affects all plot text including axes)
+            if self.font_id is not None:
+                dpg.bind_item_font("property_plot", self.font_id)
 
-    def _update_plot(self, property_name: str) -> None:
+            # Placeholder plot data
+            if NUMPY_AVAILABLE:
+                # Create sample data for demonstration
+                x_data = np.linspace(1e9, 1e12, 100)  # 1 GHz to 1 THz
+                y_data = np.ones_like(x_data)  # Placeholder: constant value
+                dpg.add_line_series(
+                    x_data.tolist(),
+                    y_data.tolist(),
+                    label="Property",
+                    parent="property_plot_y_axis",
+                    tag="property_plot_series",
+                )
+
+    def _update_plot(self, sender, app_data) -> None:
         """
         Update the plot based on selected property.
 
         Parameters
         ----------
-        property_name : str
-            Name of the property to plot.
+        sender : int
+            Sender ID (Dear PyGui internal).
+        app_data : str
+            Selected property name.
         """
-        if MATPLOTLIB_AVAILABLE and hasattr(self, "ax"):
-            self.ax.clear()
-            self.ax.set_xlabel("Frequency (Hz)")
-            self.ax.set_ylabel(property_name)
-            self.ax.grid(True)
-            # TODO: Plot actual material data
-            self.canvas.draw()
+        # This would update the plot with actual material data
+        # For now, just update the y-axis label
+        dpg.set_axis_labels("property_plot_y_axis", app_data)
+
+    def show(self) -> None:
+        """Show the property plotter (already visible in main window)."""
+        pass
 
     def plot_material(self, material, frequency_range: tuple[float, float]) -> None:
         """

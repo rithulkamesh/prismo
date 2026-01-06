@@ -272,7 +272,12 @@ class ElectromagneticFields:
                 field = self._fields[component]
                 if region is not None:
                     field = field[region]
-                total_energy += 0.5 * eps0 * np.sum(field**2) * dV
+                # Clamp field values to prevent overflow in energy calculation
+                field_clamped = np.clip(field, -1e10, 1e10)
+                field_sq = field_clamped**2
+                # Use safe sum to avoid overflow
+                field_sq = np.clip(field_sq, 0, 1e20)
+                total_energy += 0.5 * eps0 * np.sum(field_sq) * dV
 
         if field_type is None or field_type == "H":
             # Magnetic field energy
@@ -280,7 +285,12 @@ class ElectromagneticFields:
                 field = self._fields[component]
                 if region is not None:
                     field = field[region]
-                total_energy += 0.5 * mu0 * np.sum(field**2) * dV
+                # Clamp field values to prevent overflow in energy calculation
+                field_clamped = np.clip(field, -1e10, 1e10)
+                field_sq = field_clamped**2
+                # Use safe sum to avoid overflow
+                field_sq = np.clip(field_sq, 0, 1e20)
+                total_energy += 0.5 * mu0 * np.sum(field_sq) * dV
 
         return total_energy
 

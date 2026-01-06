@@ -175,22 +175,19 @@ class MaxwellUpdater:
         # Ez is at (i+1/2, j+1/2, k), shape (nx-1, ny-1, nz)
         # Ey is at (i+1/2, j, k+1/2), shape (nx-1, ny, nz-1)
 
-        # For ∂Ez/∂y: need Ez at j and j-1, both exist for j=0 to ny-1
+        # For ∂Ez/∂y: compute (Ez[j+1/2] - Ez[j-1/2])/dy
+        # This gives curl_ez_y at (i+1/2, j, k) with shape (nx-1, ny-1, nz)
         curl_ez_y = (Ez[:, 1:, :] - Ez[:, :-1, :]) / self.dy  # Shape: (nx-1, ny-1, nz)
-        # For ∂Ey/∂z: need Ey at k and k-1, both exist for k=0 to nz-1
+        
+        # For ∂Ey/∂z: compute (Ey[k+1/2] - Ey[k-1/2])/dz
+        # This gives curl_ey_z at (i+1/2, j, k) with shape (nx-1, ny, nz-1)
         curl_ey_z = (Ey[:, :, 1:] - Ey[:, :, :-1]) / self.dz  # Shape: (nx-1, ny, nz-1)
 
-        # To match Hx shape (nx-1, ny, nz), we need to:
-        # - Take first ny-1 elements of curl_ey_z in y-direction: curl_ey_z[:, :-1, :]
-        # - Take first nz-1 elements of curl_ez_y in z-direction: curl_ez_y[:, :, :-1]
-        # But actually, curl_ez_y already has shape (nx-1, ny-1, nz)
-        # and curl_ey_z has shape (nx-1, ny, nz-1)
-        # We need both to have shape (nx-1, ny, nz)
-        # So pad or trim appropriately
-
-        # Actually, let's match to the smallest common shape
-        ny_common = min(Hx.shape[1], curl_ez_y.shape[1], curl_ey_z.shape[1])
-        nz_common = min(Hx.shape[2], curl_ez_y.shape[2], curl_ey_z.shape[2])
+        # Update Hx only in the interior region where both curl components are defined
+        # Common region: (nx-1, ny-1, nz-1)
+        # Boundary points (j=ny-1, k=nz-1) are handled by boundary conditions
+        ny_common = min(Hx.shape[1], curl_ez_y.shape[1])
+        nz_common = min(Hx.shape[2], curl_ey_z.shape[2])
 
         da_hx = self._interpolate_to_hx_points(self.Da)[
             : Hx.shape[0], :ny_common, :nz_common
@@ -199,10 +196,15 @@ class MaxwellUpdater:
             : Hx.shape[0], :ny_common, :nz_common
         ]
 
-        Hx[:, :ny_common, :nz_common] = da_hx * Hx[
-            :, :ny_common, :nz_common
-        ] - db_hx * (
-            curl_ez_y[:, :ny_common, :nz_common] - curl_ey_z[:, :ny_common, :nz_common]
+        # Update Hx in the common region where both curls are defined
+        # curl_ez_y: (nx-1, ny-1, nz) -> use [:ny_common, :nz_common]
+        # curl_ey_z: (nx-1, ny, nz-1) -> use [:ny_common, :nz_common]
+        Hx[:, :ny_common, :nz_common] = (
+            da_hx * Hx[:, :ny_common, :nz_common]
+            - db_hx * (
+                curl_ez_y[:, :ny_common, :nz_common]
+                - curl_ey_z[:, :ny_common, :nz_common]
+            )
         )
 
         # Hy update: ∂Hy/∂t = -(1/μ) * (∂Ex/∂z - ∂Ez/∂x)
@@ -213,6 +215,7 @@ class MaxwellUpdater:
         curl_ex_z = (Ex[:, :, 1:] - Ex[:, :, :-1]) / self.dz  # Shape: (nx, ny-1, nz-1)
         curl_ez_x = (Ez[1:, :, :] - Ez[:-1, :, :]) / self.dx  # Shape: (nx-1, ny-1, nz)
 
+        # Update Hy only in the interior region where both curl components are defined
         nx_common = min(Hy.shape[0], curl_ex_z.shape[0], curl_ez_x.shape[0])
         nz_common = min(Hy.shape[2], curl_ex_z.shape[2], curl_ez_x.shape[2])
 
@@ -223,10 +226,12 @@ class MaxwellUpdater:
             :nx_common, : Hy.shape[1], :nz_common
         ]
 
-        Hy[:nx_common, :, :nz_common] = da_hy * Hy[
-            :nx_common, :, :nz_common
-        ] - db_hy * (
-            curl_ex_z[:nx_common, :, :nz_common] - curl_ez_x[:nx_common, :, :nz_common]
+        Hy[:nx_common, :, :nz_common] = (
+            da_hy * Hy[:nx_common, :, :nz_common]
+            - db_hy * (
+                curl_ex_z[:nx_common, :, :nz_common]
+                - curl_ez_x[:nx_common, :, :nz_common]
+            )
         )
 
         # Hz update: ∂Hz/∂t = -(1/μ) * (∂Ey/∂x - ∂Ex/∂y)
@@ -237,6 +242,7 @@ class MaxwellUpdater:
         curl_ey_x = (Ey[1:, :, :] - Ey[:-1, :, :]) / self.dx  # Shape: (nx-1, ny, nz-1)
         curl_ex_y = (Ex[:, 1:, :] - Ex[:, :-1, :]) / self.dy  # Shape: (nx, ny-1, nz-1)
 
+        # Update Hz only in the interior region where both curl components are defined
         nx_common = min(Hz.shape[0], curl_ey_x.shape[0], curl_ex_y.shape[0])
         ny_common = min(Hz.shape[1], curl_ey_x.shape[1], curl_ex_y.shape[1])
 
@@ -247,10 +253,12 @@ class MaxwellUpdater:
             :nx_common, :ny_common, : Hz.shape[2]
         ]
 
-        Hz[:nx_common, :ny_common, :] = da_hz * Hz[
-            :nx_common, :ny_common, :
-        ] - db_hz * (
-            curl_ey_x[:nx_common, :ny_common, :] - curl_ex_y[:nx_common, :ny_common, :]
+        Hz[:nx_common, :ny_common, :] = (
+            da_hz * Hz[:nx_common, :ny_common, :]
+            - db_hz * (
+                curl_ey_x[:nx_common, :ny_common, :]
+                - curl_ex_y[:nx_common, :ny_common, :]
+            )
         )
 
     def _update_e_fields_3d(self, fields: ElectromagneticFields) -> None:
@@ -369,33 +377,69 @@ class MaxwellUpdater:
             # Hz update: ∂Hz/∂t = -(1/μ) * (∂Ey/∂x - ∂Ex/∂y)
             # Hz is at (i, j), Ex is at (i, j+1/2), Ey is at (i+1/2, j)
 
+            # Hz update: ∂Hz/∂t = -(1/μ) * (∂Ey/∂x - ∂Ex/∂y)
+            # Hz is at (i, j), Ex is at (i, j+1/2), Ey is at (i+1/2, j)
+            
+            # Compute curl components with proper shape handling
             curl_ey_x = np.zeros_like(Hz)
-            if Ey.shape[0] > 1:
+            if Ey.shape[0] > 1 and Ey.shape[1] > 0 and self.dx > 0:
                 # ∂Ey/∂x: (Ey[i+1,j] - Ey[i,j])/dx
                 # Ey has shape (nx-1, ny), Hz has shape (nx, ny)
-                # Take derivative and assign to matching Hz points
-                nx_curl = min(Ey.shape[0] - 1, Hz.shape[0] - 1)
-                curl_ey_x[:nx_curl, :] = (
-                    Ey[1 : nx_curl + 1, :] - Ey[:nx_curl, :]
-                ) / self.dx
+                # Compute derivative for overlapping region
+                nx_curl_ey = min(Ey.shape[0] - 1, Hz.shape[0] - 1)
+                ny_curl_ey = min(Ey.shape[1], Hz.shape[1])
+                if nx_curl_ey > 0 and ny_curl_ey > 0:
+                    # Clamp Ey values to prevent overflow
+                    ey_slice1 = np.clip(Ey[1 : nx_curl_ey + 1, :ny_curl_ey], -1e10, 1e10)
+                    ey_slice2 = np.clip(Ey[:nx_curl_ey, :ny_curl_ey], -1e10, 1e10)
+                    curl_ey_x[:nx_curl_ey, :ny_curl_ey] = (ey_slice1 - ey_slice2) / self.dx
+                    # Clamp curl result to prevent overflow
+                    curl_ey_x[:nx_curl_ey, :ny_curl_ey] = np.clip(
+                        curl_ey_x[:nx_curl_ey, :ny_curl_ey], -1e15, 1e15
+                    )
 
             curl_ex_y = np.zeros_like(Hz)
-            if Ex.shape[1] > 1:
+            if Ex.shape[0] > 0 and Ex.shape[1] > 1 and self.dy > 0:
                 # ∂Ex/∂y: (Ex[i,j+1] - Ex[i,j])/dy
                 # Ex has shape (nx, ny-1), Hz has shape (nx, ny)
-                # Take derivative and assign to matching Hz points
-                ny_curl = min(Ex.shape[1] - 1, Hz.shape[1] - 1)
-                curl_ex_y[:, :ny_curl] = (
-                    Ex[:, 1 : ny_curl + 1] - Ex[:, :ny_curl]
-                ) / self.dy
+                # Compute derivative for overlapping region
+                nx_curl_ex = min(Ex.shape[0], Hz.shape[0])
+                ny_curl_ex = min(Ex.shape[1] - 1, Hz.shape[1] - 1)
+                if nx_curl_ex > 0 and ny_curl_ex > 0:
+                    # Clamp Ex values to prevent overflow
+                    ex_slice1 = np.clip(Ex[:nx_curl_ex, 1 : ny_curl_ex + 1], -1e10, 1e10)
+                    ex_slice2 = np.clip(Ex[:nx_curl_ex, :ny_curl_ex], -1e10, 1e10)
+                    curl_ex_y[:nx_curl_ex, :ny_curl_ex] = (ex_slice1 - ex_slice2) / self.dy
+                    # Clamp curl result to prevent overflow
+                    curl_ex_y[:nx_curl_ex, :ny_curl_ex] = np.clip(
+                        curl_ex_y[:nx_curl_ex, :ny_curl_ex], -1e15, 1e15
+                    )
 
             da_hz = self._interpolate_to_hz_points_2d(self.Da[:, :, 0])
             db_hz = self._interpolate_to_hz_points_2d(self.Db[:, :, 0])
 
             nx_hz, ny_hz = Hz.shape
-            Hz[:, :] = da_hz[:nx_hz, :ny_hz] * Hz - db_hz[:nx_hz, :ny_hz] * (
-                curl_ey_x - curl_ex_y
-            )
+            # Update only in the common region where both curls are defined
+            nx_common = min(nx_hz, curl_ey_x.shape[0], curl_ex_y.shape[0])
+            ny_common = min(ny_hz, curl_ey_x.shape[1], curl_ex_y.shape[1])
+            
+            if nx_common > 0 and ny_common > 0:
+                # Compute curl difference with overflow protection
+                curl_diff = curl_ey_x[:nx_common, :ny_common] - curl_ex_y[:nx_common, :ny_common]
+                curl_diff = np.clip(curl_diff, -1e15, 1e15)
+                
+                # Clamp Hz before update to prevent overflow
+                hz_old = np.clip(Hz[:nx_common, :ny_common], -1e10, 1e10)
+                
+                Hz[:nx_common, :ny_common] = (
+                    da_hz[:nx_common, :ny_common] * hz_old
+                    - db_hz[:nx_common, :ny_common] * curl_diff
+                )
+                
+                # Clamp result to prevent overflow
+                Hz[:nx_common, :ny_common] = np.clip(
+                    Hz[:nx_common, :ny_common], -1e10, 1e10
+                )
 
     def _update_e_fields_2d(self, fields: ElectromagneticFields) -> None:
         """Update E-field components for 2D case."""
@@ -679,6 +723,17 @@ class FDTDSolver(TimeDomainSolver):
     def get_fields(self) -> ElectromagneticFields:
         """Get the current electromagnetic fields."""
         return self.fields
+
+    def get_time_step(self) -> float:
+        """
+        Get the time step used by the solver.
+
+        Returns
+        -------
+        float
+            Time step in seconds.
+        """
+        return self.updater.get_time_step()
 
     def reset(self) -> None:
         """Reset simulation to initial state."""

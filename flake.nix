@@ -20,8 +20,8 @@
         # Custom Python with required packages
         python = pkgs.python311;
 
-        # Development dependencies
-        devDeps =
+        # Base development dependencies (without GUI - fast to build)
+        baseDevDeps =
           with pkgs;
           [
             # Core Python and package management
@@ -55,13 +55,6 @@
             gnumake
             pre-commit
 
-            # Optional: GUI/visualization dependencies
-            xorg.libX11
-            xorg.libXext
-            xorg.libXrender
-            libGL
-            libGLU
-
             # Performance monitoring
             htop
 
@@ -75,8 +68,26 @@
             glibc
           ];
 
-        # Shell hook for setting up the development environment
-        shellHook = ''
+        # GUI dependencies (only included in gui shell)
+        # Using lightweight Dear PyGui instead of heavy Qt/PySide6
+        # Note: Dear PyGui uses X11 (works on Wayland via XWayland)
+        # PyVista requires additional X11 libraries for VTK rendering
+        guiDeps = with pkgs; [
+          # Minimal GUI dependencies for Dear PyGui
+          # X11 libraries (required even on Wayland - XWayland provides compatibility)
+          xorg.libX11
+          xorg.libXext
+          xorg.libXrender # Required for PyVista/VTK rendering
+          xorg.libXrandr # For display management
+          xorg.libXi # For input handling
+          xorg.libXfixes # X fixes extension
+          libGL
+          mesa # OpenGL implementation
+          # Dear PyGui is installed via pip/uv, not nix (much lighter!)
+        ];
+
+        # Base shell hook (without GUI)
+        baseShellHook = ''
           echo "🔬 Welcome to Prismo FDTD Solver Development Environment"
           echo "📦 Python version: $(python --version)"
           echo "🚀 UV version: $(uv --version)"
@@ -149,12 +160,54 @@
           echo ""
         '';
 
+        # GUI shell hook (includes minimal GUI library paths)
+        guiShellHook = baseShellHook + ''
+          # Add GUI library paths for Dear PyGui and PyVista
+          export LD_LIBRARY_PATH="${
+            pkgs.lib.makeLibraryPath [
+              pkgs.libGL
+              pkgs.mesa
+              pkgs.xorg.libX11
+              pkgs.xorg.libXext
+              pkgs.xorg.libXrender
+              pkgs.xorg.libXrandr
+              pkgs.xorg.libXi
+              pkgs.xorg.libXfixes
+            ]
+          }:$LD_LIBRARY_PATH"
+        '';
+
       in
       {
+        # Default dev shell (fast - no GUI/QT compilation)
         devShells.default = pkgs.mkShell {
           name = "prismo-dev";
-          packages = devDeps;
-          inherit shellHook;
+          packages = baseDevDeps;
+          shellHook = baseShellHook + ''
+            echo "💡 Tip: Use 'nix develop .#gui' for GUI development (lightweight Dear PyGui)"
+            echo ""
+          '';
+
+          # Environment variables for the shell
+          PRISMO_DEV = "1";
+          PYTHONPATH = "./src";
+
+          # Ensure proper locale for Python
+          LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
+          LANG = "en_US.UTF-8";
+          LC_ALL = "en_US.UTF-8";
+        };
+
+        # GUI dev shell (includes PySide6 - use binary caches for faster builds)
+        devShells.gui = pkgs.mkShell {
+          name = "prismo-dev-gui";
+          packages = baseDevDeps ++ guiDeps;
+          shellHook = guiShellHook + ''
+            echo "🎨 GUI development environment (Dear PyGui - lightweight!)"
+            echo "💡 Install GUI: uv pip install dearpygui"
+            echo "🌐 Works on both X11 and Wayland (via XWayland)"
+            echo ""
+          '';
 
           # Environment variables for the shell
           PRISMO_DEV = "1";

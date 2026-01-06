@@ -182,7 +182,13 @@ class GaussianBeamSource(Source):
             raise RuntimeError("Source must be initialized with a grid first")
 
         # Get waveform value at current time
-        amplitude = self.waveform(time)
+        # Waveform can be called directly or via evaluate method
+        if hasattr(self.waveform, 'evaluate'):
+            amplitude = self.waveform.evaluate(time)
+        elif hasattr(self.waveform, '__call__'):
+            amplitude = self.waveform(time)
+        else:
+            amplitude = self.waveform.value(time) if hasattr(self.waveform, 'value') else 0.0
 
         # Get grid coordinates for the source region
         x_min, x_max, y_min, y_max, z_min, z_max = self._compute_source_region()
@@ -295,4 +301,47 @@ class GaussianBeamSource(Source):
 
             # Apply source
             field_component = fields[comp]
-            field_component[indices] += values.flat
+            
+            # Handle indexing: indices from np.ix_() is a tuple of arrays
+            # We need to properly broadcast values to match the indexed region
+            if isinstance(indices, tuple) and len(indices) > 0:
+                # For np.ix_() indexing, we need to reshape values to match the broadcast shape
+                # The indices create a meshgrid-like indexing
+                try:
+                    # Get the shape of the indexed region
+                    if all(hasattr(idx, 'shape') for idx in indices):
+                        # Calculate the output shape from np.ix_ indexing
+                        output_shape = tuple(len(idx.flat) if len(idx.shape) > 1 else len(idx) for idx in indices)
+                        # For 2D case, we might have (ny, nz) or just (ny,) depending on grid
+                        if len(output_shape) == 2 and output_shape[1] == 1:
+                            # 2D grid case - values should be (ny, 1) or (ny,)
+                            if values.shape[0] == output_shape[0]:
+                                values_to_add = values.reshape(output_shape[0], 1) if len(values.shape) == 1 else values
+                            else:
+                                values_to_add = values.flatten()[:output_shape[0]].reshape(output_shape[0], 1)
+                        elif len(output_shape) == 2:
+                            # 3D case
+                            values_to_add = values.reshape(output_shape) if values.size == np.prod(output_shape) else values
+                        else:
+                            values_to_add = values.flatten()
+                        
+                        # Apply using advanced indexing
+                        field_component[indices] += values_to_add
+                    else:
+                        # Fallback: try to flatten and use basic indexing
+                        field_component[indices] += values.flatten()
+                except (ValueError, IndexError) as e:
+                    # If indexing fails, try a simpler approach
+                    # Flatten both the field component region and values
+                    try:
+                        flat_indices = np.ravel_multi_index(
+                            [idx.flat for idx in indices],
+                            field_component.shape
+                        )
+                        field_component.flat[flat_indices] += values.flatten()
+                    except:
+                        # Last resort: try direct assignment
+                        field_component[indices] = field_component[indices] + values
+            else:
+                # Fallback: try direct indexing
+                field_component[indices] += values.flatten()

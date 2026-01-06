@@ -10,6 +10,7 @@ These tutorials are designed to be followed in order, building your understandin
 :maxdepth: 1
 
 basic_simulation
+gui_simulation_guide
 waveguide_coupling
 sparameters
 optimization
@@ -26,7 +27,18 @@ Build your first complete FDTD simulation from scratch. Learn about:
 - Running simulations
 - Visualizing results
 
-### 2. Waveguide Coupling
+### 2. GUI Simulation Guide
+
+Learn to use Prismo's Lumerical-style GUI interface. You'll master:
+
+- Creating simulations with the GUI
+- Adding geometric shapes (Box, Sphere, Cylinder, Polygon)
+- Working with materials and assigning properties
+- Using the 3D viewport with slice planes
+- Adding sources and monitors
+- Running simulations and viewing results
+
+### 3. Waveguide Coupling
 
 Design and simulate waveguide structures. Topics include:
 
@@ -35,7 +47,7 @@ Design and simulate waveguide structures. Topics include:
 - Mode injection with ModeSource
 - Analyzing coupling efficiency
 
-### 3. S-Parameters
+### 4. S-Parameters
 
 Extract S-parameters from two-port devices. You'll learn:
 
@@ -44,7 +56,7 @@ Extract S-parameters from two-port devices. You'll learn:
 - Calculating reflection (S11) and transmission (S21)
 - Frequency-domain analysis
 
-### 4. Parameter Optimization
+### 5. Parameter Optimization
 
 Optimize device parameters using sweeps. Covers:
 

@@ -14,6 +14,7 @@ import numpy as np
 from prismo.core.fields import ElectromagneticFields
 from prismo.core.grid import GridSpec, YeeGrid
 from prismo.core.solver import FDTDSolver
+from prismo.geometry.shapes import Shape
 from prismo.monitors.base import Monitor
 from prismo.monitors.field import FieldMonitor
 from prismo.solvers.base import SolverBase, TimeDomainSolver
@@ -72,16 +73,22 @@ class Simulation:
         self.courant_factor = courant_factor
         self.solver_type = solver_type.lower()
 
-        # Create fields
-        self.fields = ElectromagneticFields(self.grid)
-
-        # Set up solver using factory pattern
-        self.solver = self._create_solver(courant_factor)
-        self.dt = self.solver.get_time_step()
-
         # Storage for sources and monitors
         self.sources: list[Source] = []
         self.monitors: list[Monitor] = []
+        
+        # Storage for geometry shapes
+        self.shapes: list[Shape] = []
+
+        # Material arrays (will be computed from shapes)
+        self.material_arrays: Optional[dict] = None
+
+        # Create fields
+        self.fields = ElectromagneticFields(self.grid)
+
+        # Set up solver using factory pattern (will be updated when shapes are added)
+        self.solver = self._create_solver(courant_factor)
+        self.dt = self.solver.get_time_step()
 
         # Simulation state
         self.step_count = 0
@@ -103,7 +110,8 @@ class Simulation:
         """
         if self.solver_type == "fdtd":
             dt = self.grid.get_time_step(courant_factor)
-            return FDTDSolver(self.grid, dt)
+            # Use material arrays if they've been computed
+            return FDTDSolver(self.grid, dt, material_arrays=self.material_arrays)
         elif self.solver_type == "meep":
             # Try to import and use MEEP solver
             try:
@@ -123,8 +131,9 @@ class Simulation:
                 return FEMSolver(self.grid)
             except ImportError:
                 raise ImportError(
-                    "FEM solver requested but FEniCS is not available. "
-                    "Install with: pip install fenics-dolfinx"
+                    "FEM solver requested but FEniCS is not available.\n"
+                    "Install with: conda install -c conda-forge fenics-dolfinx\n"
+                    "or from source: https://fenicsproject.org/download/"
                 )
         else:
             raise ValueError(
@@ -155,6 +164,19 @@ class Simulation:
         """
         monitor.initialize(self.grid)
         self.monitors.append(monitor)
+
+    def add_shape(self, shape: Shape) -> None:
+        """
+        Add a geometric shape to the simulation.
+
+        Parameters
+        ----------
+        shape : Shape
+            The geometric shape to add.
+        """
+        self.shapes.append(shape)
+        # Recompute material arrays when shapes are added
+        self._update_material_arrays()
 
     def run(
         self,
@@ -195,6 +217,87 @@ class Simulation:
             progress_callback(
                 steps, steps, self.current_time, time_module.time() - start_time
             )
+
+    def _update_material_arrays(self) -> None:
+        """
+        Rasterize all shapes to create material property arrays.
+        
+        This method converts geometric shapes into material property arrays
+        (eps_rel, mu_rel) that are used by the FDTD solver.
+        """
+        if len(self.shapes) == 0:
+            # No shapes, use vacuum (default)
+            self.material_arrays = None
+            return
+        
+        # Get grid dimensions
+        nx, ny, nz = self.grid.dimensions
+        
+        # Initialize material arrays with vacuum (eps_r=1, mu_r=1)
+        eps_rel = np.ones((nx, ny, nz), dtype=np.float64)
+        mu_rel = np.ones((nx, ny, nz), dtype=np.float64)
+        
+        # Get grid coordinates
+        dx, dy, dz = self.grid.spacing
+        origin = self.grid.origin
+        
+        # Create coordinate arrays
+        x = origin[0] + np.arange(nx) * dx
+        y = origin[1] + np.arange(ny) * dy
+        if self.grid.is_2d:
+            z = np.array([0.0])
+        else:
+            z = origin[2] + np.arange(nz) * dz
+        
+        # Rasterize each shape and apply its material properties
+        for shape in self.shapes:
+            # Rasterize shape to get boolean mask
+            mask = shape.rasterize(x, y, z if not self.grid.is_2d else None)
+            
+            # Ensure mask has correct shape
+            if self.grid.is_2d and len(mask.shape) == 2:
+                # Expand to 3D for consistency
+                mask = mask[:, :, np.newaxis]
+            
+            # Apply material properties where shape is present
+            # Use the shape's material epsilon_r and mu_r
+            eps_rel[mask] = shape.material.epsilon_r
+            mu_rel[mask] = shape.material.mu_r
+        
+        # Store material arrays
+        self.material_arrays = {
+            "eps_rel": eps_rel,
+            "mu_rel": mu_rel,
+            "sigma_e": np.zeros((nx, ny, nz), dtype=np.float64),
+            "sigma_m": np.zeros((nx, ny, nz), dtype=np.float64),
+        }
+        
+        # Recreate solver with new material arrays
+        if self.solver_type == "fdtd":
+            # Preserve current time step
+            if hasattr(self, 'solver') and self.solver is not None:
+                dt = self.solver.get_time_step()
+            else:
+                dt = self.grid.get_time_step(self.courant_factor)
+            
+            # Create new solver with material arrays
+            # The solver will create its own fields, but we'll sync them
+            new_solver = FDTDSolver(self.grid, dt, material_arrays=self.material_arrays)
+            
+            # Sync fields: copy field values from old fields to new solver's fields
+            if hasattr(self, 'fields') and self.fields is not None:
+                # Copy field values to new solver's fields
+                new_solver.fields.Ex[:] = self.fields.Ex
+                new_solver.fields.Ey[:] = self.fields.Ey
+                new_solver.fields.Ez[:] = self.fields.Ez
+                new_solver.fields.Hx[:] = self.fields.Hx
+                new_solver.fields.Hy[:] = self.fields.Hy
+                new_solver.fields.Hz[:] = self.fields.Hz
+                # Update reference
+                self.fields = new_solver.fields
+            
+            self.solver = new_solver
+            self.dt = self.solver.get_time_step()
 
     def step(self) -> None:
         """
