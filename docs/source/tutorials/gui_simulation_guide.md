@@ -23,9 +23,10 @@ This guide will walk you through creating a complete simulation using Prismo's G
 
 The Prismo GUI provides:
 
-- **3D Viewport**: Interactive 3D visualization of your simulation geometry
+- **3D Viewport**: Interactive 3D visualization of your simulation geometry with embedded viewport controls
 - **Slice Planes**: Cut through your geometry to inspect interior structures (XY, XZ, YZ planes)
-- **Shape Management**: Create and modify geometric objects with materials
+- **Shape Dialog**: Interactive dialog for creating geometric shapes (Box, Sphere, Cylinder) with material assignment
+- **Results Viewer**: Built-in viewer for visualizing field data, spectra, S-parameters, and time series
 - **Simulation Control**: Run, stop, and reset simulations with progress monitoring
 
 ## Step 1: Launch the GUI
@@ -47,8 +48,11 @@ window.show()
 
 The main window will open with:
 
-- **Left Panel**: 3D Viewport with slice plane controls
-- **Right Panel**: Property plotter and analysis tools
+- **Left Panel**: Embedded 3D Viewport with slice plane controls
+- **Right Panel**: 
+  - Geometry panel with shape list and "Add Shape" button
+  - Property plotter for material visualization
+  - Results Viewer for simulation results
 - **Top Menu**: File operations, simulation control, view options
 
 ## Step 2: Create a New Simulation
@@ -103,9 +107,33 @@ Example: To see the middle of a waveguide:
 
 ## Step 5: Creating Geometric Shapes
 
+The GUI provides two ways to add shapes: through the interactive Shape Dialog or programmatically via Python code.
+
+### Adding Shapes via GUI (Shape Dialog)
+
+The easiest way to add shapes is using the built-in Shape Dialog:
+
+1. Click the **"Add Shape"** button in the Geometry panel (right side)
+2. A dialog window will open with options to create:
+   - **Box (Rectangle)**: Rectangular structures like waveguides
+   - **Sphere (Ball)**: Spherical structures
+   - **Cylinder (Tube)**: Cylindrical waveguides or structures
+
+3. **Configure Shape Parameters**:
+   - **Position**: Set center coordinates (X, Y, Z) in meters
+   - **Size/Dimensions**: 
+     - For Box: Width (X), Height (Y), Depth (Z)
+     - For Sphere: Radius
+     - For Cylinder: Radius, Height, and Axis orientation
+   - **Material**: Select from library materials (Si, SiO2, Au, etc.) or enter custom permittivity
+
+4. Click **"Create Shape"** to add it to your simulation
+
+The shape will immediately appear in the 3D viewport, and you can see it listed in the Geometry panel.
+
 ### Adding Shapes Programmatically
 
-While the GUI provides visualization, shapes are typically added via Python code. Here's how to create common shapes:
+You can also add shapes via Python code for more control or automation:
 
 #### Box (Rectangular Structure)
 
@@ -435,9 +463,29 @@ print(f"Simulation completed in {sim.current_time*1e15:.1f} fs")
 
 ## Step 11: Viewing Results
 
-After the simulation completes:
+After the simulation completes, you can view results both in the GUI and programmatically.
 
-### Retrieve Field Data
+### Viewing Results in GUI (Results Viewer)
+
+The GUI includes a built-in Results Viewer for interactive visualization:
+
+1. **Open Results Viewer**: Expand the "Results Viewer" section in the right panel
+2. **Load Results**: You have two options:
+   - **Load from Monitor**: Click "Load from Monitor" to load data directly from a monitor in your simulation
+   - **Load from File**: Click "Load Results..." to load previously saved results from CSV or Parquet files
+
+3. **Visualize Data**: The Results Viewer supports:
+   - **Field Plots**: 2D field distributions with colormaps
+   - **Spectra**: Frequency-domain power spectra
+   - **S-Parameters**: Reflection and transmission coefficients
+   - **Time Series**: Time-domain field evolution
+
+4. **Interactive Controls**: 
+   - Select different field components (Ex, Ey, Ez, Hx, Hy, Hz)
+   - Adjust colormap and scaling
+   - Zoom and pan in plots
+
+### Retrieve Field Data Programmatically
 
 ```python
 # Get time-domain field data
@@ -464,6 +512,20 @@ plt.show()
 # Get power transmission
 transmission = flux_monitor.get_frequency_domain_power(frequency=193.4e12)
 print(f"Transmission: {transmission:.4f}")
+```
+
+### Saving and Loading Results
+
+You can save results to files for later analysis:
+
+```python
+# Export to CSV
+from prismo.io.exporters import CSVExporter
+
+exporter = CSVExporter()
+exporter.export_spectrum(monitor, "results.csv")
+
+# Later, load in GUI using "Load Results..." button
 ```
 
 ## Complete Example
